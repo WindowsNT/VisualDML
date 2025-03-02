@@ -28,6 +28,13 @@ struct XLNODE
 {
 
     int tidx = 0; // idx in MLOP
+    bool BufferVisible = 0;
+    D2F bhit = { };
+    D2F bhit2 = { };
+
+
+    unsigned long long ShareMemory = 0;
+    bool bSelected = 0;
     std::vector<PARAM> Params;
 
 
@@ -408,7 +415,7 @@ struct XL : public XLNODE
 				for (auto& c : n->children)
 				{
                     for(auto& gg : c.g)
-                        nnn = std::max(nnn + 1,gg + 1);
+                        nnn = std::max(n->ShareMemory,std::max(nnn + 1,gg + 1));
 				}
 			}
 		}
@@ -496,6 +503,7 @@ namespace winrt::DirectMLGraph::implementation
 
         void Push();
         void Undo();
+        void Unselect();
         void Key(long long k);
         void RefreshMenu();
         void OnLoaded(IInspectable, IInspectable);
