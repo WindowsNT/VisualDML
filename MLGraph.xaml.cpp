@@ -370,6 +370,11 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
         }
         if (1)
         {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem N; N.Text(L"Constant"); N.Click(fooo);
+            A.Items().Append(N);
+        }
+        if (1)
+        {
             winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem N; N.Text(L"Cos"); N.Click(fooo);
             A.Items().Append(N);
         }
@@ -409,6 +414,18 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
             winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Exp"); Neg.Click(fooo);
             A.Items().Append(Neg);
         }
+        r1.Items().Append(A);
+    }
+
+
+    if (1)
+    {
+        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubItem A;
+        A.Text(L"I");
+
+        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Identity"); Neg.Click(fooo);
+        A.Items().Append(Neg);
+
         r1.Items().Append(A);
     }
 
@@ -932,6 +949,21 @@ namespace winrt::DirectMLGraph::implementation
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
+                                if (t == L"Constant")
+                                {
+                                    OnAddConstant({}, {});
+/*
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_CLIP);
+
+                                    node->Params.resize(1);
+                                    node->Params[0].n = L"Scalar";
+                                    node->Params[0].v = 0.0f;
+
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                    */
+                                }
                                 if (t == L"Cos")
                                 {
                                     auto node = std::make_shared<XLNODE_ANY>(1, TYPE_COS);
@@ -963,6 +995,13 @@ namespace winrt::DirectMLGraph::implementation
                                 if (t == L"Exp")
                                 {
                                     auto node = std::make_shared<XLNODE_ANY>(1, TYPE_EXP);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+                                if (t == L"Identity")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_IDENTITY);
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
@@ -1421,6 +1460,11 @@ namespace winrt::DirectMLGraph::implementation
         }
     }
 
+    void MLGraph::OnAddConstant(IInspectable const&, IInspectable const&)
+    {
+
+    }
+
     void MLGraph::OnAddInput(IInspectable const&, IInspectable const&)
     {
         WhatInput = 1;
@@ -1468,6 +1512,17 @@ namespace winrt::DirectMLGraph::implementation
 					if (it->csv_input.length())
 					{
 						std::ifstream f(it->csv_input);
+                        if (!f.is_open())
+                        {
+                            std::vector<wchar_t> mf(1000);
+							wcscpy_s(mf.data(), 1000, current_file.c_str());
+							std::wstring mfs = mf.data();
+							auto p = mfs.find_last_of(L"\\");
+							mfs = mfs.substr(0, p);
+							mfs += L"\\";
+							mfs += it->csv_input;
+							f = std::ifstream(mfs);
+                        }
 						if (f.is_open())
 						{
                             std::vector<float> v;
@@ -1502,7 +1557,22 @@ namespace winrt::DirectMLGraph::implementation
                 {
                     if (it->csv_output.length())
                     {
-                        DeleteFile(it->csv_output.c_str());
+						auto of = it->csv_output;
+						auto pathhas = wcsrchr(of.c_str(), L'\\');
+                        if (!pathhas)
+                        {
+                            std::vector<wchar_t> pa(1000);
+							wcscpy_s(pa.data(), 1000, current_file.c_str());
+							std::wstring mfs = pa.data();
+							auto p = mfs.find_last_of(L"\\");
+							mfs = mfs.substr(0, p);
+							mfs += L"\\";
+							mfs += of;
+							of = mfs;
+                        }
+
+
+                        DeleteFile(of.c_str());
                         auto& wh = mlop.Item(node->tidx);
                         if (!wh.buffer)
                             continue;
@@ -1510,7 +1580,7 @@ namespace winrt::DirectMLGraph::implementation
                         wh.buffer->Download(&ml, (size_t)-1, v);
                         std::vector<float> fv(v.size() / 4);
                         memcpy(fv.data(), v.data(), v.size());
-                        std::ofstream f(it->csv_output);
+                        std::ofstream f(of);
                         if (f.is_open())
                         {
                             for (size_t i = 0; i < fv.size(); i++)
@@ -1518,7 +1588,7 @@ namespace winrt::DirectMLGraph::implementation
                                 f << fv[i] << std::endl;
                             }
                         }
-                        Locate(it->csv_output.c_str());
+                        Locate(of.c_str());
                     }
                 }
             }
@@ -1686,6 +1756,13 @@ namespace winrt::DirectMLGraph::implementation
                             expr = (dml::Ceil(mop.Item(whati[0])));
                         if (it->what == TYPE_CLIP)
                             expr = (dml::Clip(mop.Item(whati[0]),it->Params[0].v, it->Params[1].v));
+
+
+                        if (it->what == TYPE_CONSTANT)
+                        {
+//							expr = (ml.ConstantValueTensor(it->Params[0].v));
+                        }
+
                         if (it->what == TYPE_COS)
                             expr = (dml::Cos(mop.Item(whati[0])));
                         if (it->what == TYPE_COSH)
@@ -1699,6 +1776,9 @@ namespace winrt::DirectMLGraph::implementation
                             expr = (dml::Erf(mop.Item(whati[0])));
                         if (it->what == TYPE_EXP)
                             expr = (dml::Exp(mop.Item(whati[0])));
+
+                        if (it->what == TYPE_IDENTITY)
+                            expr = (dml::Identity(mop.Item(whati[0])));
 
                         if (it->what == TYPE_MULTIPLY)
                             expr = (dml::Multiply(mop.Item(whati[0]), mop.Item(whati[1])));

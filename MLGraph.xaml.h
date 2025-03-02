@@ -62,12 +62,12 @@ enum XLNODE_TYPE
     TYPE_ABS,TYPE_ACOS,TYPE_ACOSH, TYPE_ADD,TYPE_ASIN,TYPE_ASINH,TYPE_ATAN,TYPE_ATANH, TYPE_ATANYX,
 
     TYPE_BITAND,TYPE_BITCOUNT,TYPE_BITNOT,TYPE_BITOR,TYPE_BITSL,TYPE_BITSR,TYPE_BITXOR,
-    TYPE_CEIL,TYPE_CLIP, TYPE_COS, TYPE_COSH,
-
+    TYPE_CEIL,TYPE_CLIP, TYPE_CONSTANT,TYPE_COS, TYPE_COSH,
     TYPE_DIVIDE,
     TYPE_ERF,TYPE_EXP,
-    TYPE_NEGATE,
+    TYPE_IDENTITY,
     TYPE_MULTIPLY,
+    TYPE_NEGATE,
     TYPE_SUBTRACT,
     TYPE_OUTPUT = 999999
 };
@@ -142,6 +142,8 @@ struct XLNODE_ANY : public XLNODE
             return L"Ceil";
         if (what == TYPE_CLIP)
             return L"Clip";
+        if (what == TYPE_CONSTANT)
+            return L"Constant";
         if (what == TYPE_COS)
             return L"Cos";
         if (what == TYPE_COSH)
@@ -154,6 +156,9 @@ struct XLNODE_ANY : public XLNODE
 			return L"Erf";
 		if (what == TYPE_EXP)
 			return L"Exp";
+
+		if (what == TYPE_IDENTITY)
+			return L"Identity";
 
 		if (what == TYPE_MULTIPLY)
 			return L"Multiply";
@@ -498,6 +503,7 @@ namespace winrt::DirectMLGraph::implementation
         void OnRun(IInspectable const&, IInspectable const&);
         void OnAddOp(IInspectable const&, IInspectable const&);
         void OnAddInput(IInspectable const&, IInspectable const&);
+        void OnAddConstant(IInspectable const&, IInspectable const&);
         void OnAddOutput(IInspectable const&, IInspectable const&);
         void OnNew(IInspectable const&, IInspectable const&);
         void OnOpen(IInspectable const&, IInspectable const&);

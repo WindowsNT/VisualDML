@@ -10,11 +10,13 @@ A: Abs,ACos,ACosh,Add,ASin,ASinh,ATan,ATanh,ATanYX
 
 B: BitAnd, BitCount, BitOr, BitNot, BitShiftLeft, BitShiftRight, BitXor
 
-C: Ceil, Clip, Cos, Cosh
+C: Ceil, Clip, Constant, Cos, Cosh
 
 D: Divide
 
 E: Erf, Exp
+
+I: Identity
 
 M: Multiply
 
