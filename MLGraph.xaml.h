@@ -317,6 +317,7 @@ struct XLNODE_INPUT : public XLNODE
 
 struct XLOP : public XLNODE
 {
+    bool Visible = 1;
     std::vector<std::shared_ptr<XLNODE>> nodes;
 	DML_TENSOR_DATA_TYPE data_type = DML_TENSOR_DATA_TYPE_FLOAT32;
 

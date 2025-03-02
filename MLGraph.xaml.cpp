@@ -532,6 +532,8 @@ namespace winrt::DirectMLGraph::implementation
                     for (size_t i = 0; i < xl.ops.size(); i++)
                     {
                         auto& op = xl.ops[i];
+                        if (op.Visible == 0)
+                            continue;
                         for (size_t ii = 0; ii < op.nodes.size(); ii++)
                         {
                             auto& nod = op.nodes[ii];
@@ -801,6 +803,8 @@ namespace winrt::DirectMLGraph::implementation
                 for (size_t i = 0; i < xl.ops.size(); i++)
                 {
                     auto& op = xl.ops[i];
+                    if (op.Visible == 0)
+                        continue;
                     for (size_t ii = 0; ii < op.nodes.size(); ii++)
                     {
                         op.nodes[ii]->S = 0;
@@ -812,6 +816,9 @@ namespace winrt::DirectMLGraph::implementation
 				for (size_t i = 0; i < xl.ops.size(); i++)
 				{
 					auto& op = xl.ops[i];
+                    if (op.Visible == 0)
+                        continue;
+
                     for (size_t ii = 0; ii < op.nodes.size(); ii++)
                     {
                         for (size_t iii = 0; iii < op.nodes[ii]->children.size(); iii++ )
@@ -996,6 +1003,8 @@ namespace winrt::DirectMLGraph::implementation
 		for (size_t i = 0; i < xl.ops.size(); i++)
 		{
 			auto& op = xl.ops[i];
+            if (op.Visible == 0)
+                continue;
 			for (size_t j = 0; j < op.nodes.size(); j++)
 			{
                 auto& node = op.nodes[j];
@@ -1093,6 +1102,23 @@ namespace winrt::DirectMLGraph::implementation
 			m1.Items().Append(mi);
 		}
 
+        // Visible
+        auto m3 = sp.FindName(L"VisibleOperatorSubmenu").as<MenuFlyoutSubItem>();
+        m3.Items().Clear();
+        for (size_t i = 0; i < xl.ops.size(); i++)
+        {            
+			auto mi = winrt::Microsoft::UI::Xaml::Controls::ToggleMenuFlyoutItem();
+            mi.Text(ystring().Format(L"Operator %zi", i + 1));
+			mi.IsChecked(xl.ops[i].Visible);
+            mi.Click([this, i](IInspectable const&, RoutedEventArgs const&)
+                {
+					xl.ops[i].Visible = !xl.ops[i].Visible;
+                    Refresh();
+                });
+            m3.Items().Append(mi);
+        }
+
+
         // And to the remove menu
 		auto m2 = sp.FindName(L"DeleteOperatorSubmenu").as<MenuFlyoutSubItem>();
 		m2.Items().Clear();
@@ -1174,6 +1200,8 @@ namespace winrt::DirectMLGraph::implementation
 
     void MLGraph::OnRun(IInspectable const&, IInspectable const&)
     {
+        void Locate(const wchar_t* fi);
+
         // Initialize
         if (ml.d3D12Device == 0)
 			OnCompile({}, {}); 
@@ -1183,7 +1211,9 @@ namespace winrt::DirectMLGraph::implementation
             return;
 
         // Load csv files in inputs
-		for (size_t iop = 0 ; iop < xl.ops.size() ; iop++)
+        ml.Prepare();
+
+        for (size_t iop = 0 ; iop < xl.ops.size() ; iop++)
 		{
             auto& op = xl.ops[iop];
             auto& mlop = ml.ops[iop];
@@ -1218,32 +1248,25 @@ namespace winrt::DirectMLGraph::implementation
 					}
 				}
 			}
-		}
-
-        ml.Prepare();
-        ml.Run();
-        void Locate(const wchar_t* fi);
 
 
-        for (size_t iop = 0; iop < xl.ops.size(); iop++)
-        {
-            auto& op = xl.ops[iop];
-            auto& mlop = ml.ops[iop];
+            ml.Run(iop);
+
             for (auto& node : op.nodes)
             {
                 if (auto it = std::dynamic_pointer_cast<XLNODE>(node))
                 {
                     if (it->csv_output.length())
                     {
-						DeleteFile(it->csv_output.c_str()); 
-						auto& wh = mlop.Item(node->tidx);
-						if (!wh.buffer)
-							continue;
-						std::vector<char> v;
-						wh.buffer->Download(&ml, (size_t)-1, v);
+                        DeleteFile(it->csv_output.c_str());
+                        auto& wh = mlop.Item(node->tidx);
+                        if (!wh.buffer)
+                            continue;
+                        std::vector<char> v;
+                        wh.buffer->Download(&ml, (size_t)-1, v);
                         std::vector<float> fv(v.size() / 4);
-						memcpy(fv.data(), v.data(), v.size());
-						std::ofstream f(it->csv_output);
+                        memcpy(fv.data(), v.data(), v.size());
+                        std::ofstream f(it->csv_output);
                         if (f.is_open())
                         {
                             for (size_t i = 0; i < fv.size(); i++)
@@ -1251,11 +1274,11 @@ namespace winrt::DirectMLGraph::implementation
                                 f << fv[i] << std::endl;
                             }
                         }
-						Locate(it->csv_output.c_str());
+                        Locate(it->csv_output.c_str());
                     }
                 }
             }
-        }
+		}
 
         ml = {};
     }
@@ -1375,10 +1398,20 @@ namespace winrt::DirectMLGraph::implementation
                         if (it->what == TYPE_NEGATE)
                             expr = (dml::Negate(mop.Item(whati[0])));
 
+
+
+                        //return AddItem(td, tag, 0, BINDING_MODE::NONE, {}, 0);
+                        LPARAM tag = 0;
+                        bool NB = 0;
+						BINDING_MODE BI = BINDING_MODE::NONE;
+
                         if (it->csv_output.length())
-                            mop.AddItem(expr,0,true, BINDING_MODE::BIND_OUT);
-                        else
-                            mop.AddIntermediate(expr);
+                        {
+                            NB = 1;
+							BI = BINDING_MODE::BIND_OUT;
+                        }
+
+                        mop.AddItem(expr, tag, NB, BI);
 
                         node->tidx = tidx++;
                         continue;

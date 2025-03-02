@@ -83,6 +83,7 @@
                 </MenuFlyoutItem>
                 <MenuFlyoutSeparator/>
                 <MenuFlyoutSubItem x:Name="ActiveOperatorSubmenu" Text="Active operator" />
+                <MenuFlyoutSubItem x:Name="VisibleOperatorSubmenu" Text="Visible operator" />
                 <MenuFlyoutSubItem x:Name="DeleteOperatorSubmenu" Text="Remove operator" />
                 <MenuFlyoutSeparator/>
                 <MenuFlyoutItem Text="Compile" Click="OnCompile" >

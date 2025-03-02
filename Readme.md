@@ -4,7 +4,7 @@ A tool to visually-design DirectML operators that run in the GPU.
 
 
 
-# Supported Operators
+## Supported Operators
 
 A: Abs,ACos,ACosh,Add,ASin,ASinh,ATan,ATanh,ATanYX
 
@@ -15,7 +15,7 @@ C: Ceil, Clip, Cos, Cosh
 N: Neg
 
 
-# Pending
+### Pending
 
 All other operators, casts
 
