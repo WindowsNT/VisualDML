@@ -381,6 +381,7 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
         r1.Items().Append(A);
 
 
+
     }
 
     if (1)
@@ -391,6 +392,23 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
         winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Divide"); Neg.Click(fooo);
         A.Items().Append(Neg);
 
+        r1.Items().Append(A);
+    }
+    if (1)
+    {
+        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubItem A;
+        A.Text(L"E");
+
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Erf"); Neg.Click(fooo);
+            A.Items().Append(Neg);
+        }
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Exp"); Neg.Click(fooo);
+            A.Items().Append(Neg);
+        }
         r1.Items().Append(A);
     }
 
@@ -476,6 +494,8 @@ namespace winrt::DirectMLGraph::implementation
                     {
                         Push();
                         op.nodes.erase(op.nodes.begin() + ii);
+                        if (op.nodes.empty())
+							xl.ops.erase(xl.ops.begin() + i);
                         FullRefresh();
                         return;
                     }
@@ -670,6 +690,8 @@ namespace winrt::DirectMLGraph::implementation
                     for (size_t i = 0; i < xl.ops.size(); i++)
                     {
                         auto& op = xl.ops[i];
+                        if (i != ActiveOperator2)
+                            continue;
                         if (op.Visible == 0)
                             continue;
                         for (size_t ii = 0; ii < op.nodes.size(); ii++)
@@ -927,6 +949,20 @@ namespace winrt::DirectMLGraph::implementation
                                 if (t == L"Divide")
                                 {
                                     auto node = std::make_shared<XLNODE_ANY>(2, TYPE_DIVIDE);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+                                if (t == L"Erf")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_ERF);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+                                if (t == L"Exp")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_EXP);
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
@@ -1616,6 +1652,8 @@ namespace winrt::DirectMLGraph::implementation
                             expr = (dml::ACos(mop.Item(whati[0])));
                         if (it->what == TYPE_ACOSH)
                             expr = (dml::ACosh(mop.Item(whati[0])));
+                        if (it->what == TYPE_ADD)
+                            expr = (dml::Add(mop.Item(whati[0]), mop.Item(whati[1])));
                         if (it->what == TYPE_ASIN)
                             expr = (dml::ASin(mop.Item(whati[0])));
                         if (it->what == TYPE_ASINH)
@@ -1624,32 +1662,14 @@ namespace winrt::DirectMLGraph::implementation
                             expr = (dml::ATan(mop.Item(whati[0])));
                         if (it->what == TYPE_ATANH)
                             expr = (dml::ATanh(mop.Item(whati[0])));
+                        if (it->what == TYPE_ATANYX)
+                            expr = (dml::ATanYX(mop.Item(whati[0]), mop.Item(whati[1])));
 
 
                         if (it->what == TYPE_BITCOUNT)
                             expr = (dml::BitCount(mop.Item(whati[0])));
                         if (it->what == TYPE_BITNOT)
                             expr = (dml::BitNot(mop.Item(whati[0])));
-
-
-                        if (it->what == TYPE_CEIL)
-                            expr = (dml::Ceil(mop.Item(whati[0])));
-                        if (it->what == TYPE_CLIP)
-                            expr = (dml::Clip(mop.Item(whati[0]),it->Params[0].v, it->Params[1].v));
-                        if (it->what == TYPE_COS)
-                            expr = (dml::Cos(mop.Item(whati[0])));
-                        if (it->what == TYPE_COSH)
-                            expr = (dml::Cosh(mop.Item(whati[0])));
-
-
-                        if (it->what == TYPE_NEGATE)
-                            expr = (dml::Negate(mop.Item(whati[0])));
-                        
-                        if (it->what == TYPE_ADD)
-                            expr = (dml::Add(mop.Item(whati[0]), mop.Item(whati[1])));
-                        if (it->what == TYPE_ATANYX)
-                            expr = (dml::ATanYX(mop.Item(whati[0]), mop.Item(whati[1])));
-
                         if (it->what == TYPE_BITAND)
                             expr = (dml::BitAnd(mop.Item(whati[0]), mop.Item(whati[1])));
                         if (it->what == TYPE_BITOR)
@@ -1661,11 +1681,33 @@ namespace winrt::DirectMLGraph::implementation
                         if (it->what == TYPE_BITXOR)
                             expr = (dml::BitXor(mop.Item(whati[0]), mop.Item(whati[1])));
 
+
+                        if (it->what == TYPE_CEIL)
+                            expr = (dml::Ceil(mop.Item(whati[0])));
+                        if (it->what == TYPE_CLIP)
+                            expr = (dml::Clip(mop.Item(whati[0]),it->Params[0].v, it->Params[1].v));
+                        if (it->what == TYPE_COS)
+                            expr = (dml::Cos(mop.Item(whati[0])));
+                        if (it->what == TYPE_COSH)
+                            expr = (dml::Cosh(mop.Item(whati[0])));
+
                         if (it->what == TYPE_DIVIDE)
                             expr = (dml::Divide(mop.Item(whati[0]), mop.Item(whati[1])));
 
+
+                        if (it->what == TYPE_ERF)
+                            expr = (dml::Erf(mop.Item(whati[0])));
+                        if (it->what == TYPE_EXP)
+                            expr = (dml::Exp(mop.Item(whati[0])));
+
                         if (it->what == TYPE_MULTIPLY)
                             expr = (dml::Multiply(mop.Item(whati[0]), mop.Item(whati[1])));
+
+                        if (it->what == TYPE_NEGATE)
+                            expr = (dml::Negate(mop.Item(whati[0])));
+                        
+
+
 
                         Y = 1;
                     }

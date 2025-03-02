@@ -187,6 +187,7 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="Readme.md" />
+    <None Include="test.dml" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="main.rc" />

@@ -132,6 +132,12 @@ int __stdcall wWinMain(HINSTANCE, HINSTANCE, PWSTR t, int)
     //    MessageBox(0, 0, 0, 0);
     if (t)
     {
+        wchar_t a[1000] = {};
+		GetModuleFileName(0, a, 1000);
+		auto r = wcsrchr(a, L'\\');
+		if (r)
+			*r = 0;
+		SetCurrentDirectory(a);
         fil = t;
     }
 

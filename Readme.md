@@ -14,6 +14,8 @@ C: Ceil, Clip, Cos, Cosh
 
 D: Divide
 
+E: Erf, Exp
+
 M: Multiply
 
 N: Neg

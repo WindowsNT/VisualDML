@@ -59,9 +59,7 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="Readme.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <Natvis Include="$(MSBuildThisFileDirectory)..\..\natvis\wil.natvis" />
+    <None Include="test.dml" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="main.rc" />
