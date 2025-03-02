@@ -88,7 +88,7 @@ void XLNODE::Draw(ID2D1DeviceContext5* r, D2D* d2d, size_t iop)
 
 
     wchar_t hdr[100] = {};
-    swprintf_s(hdr, 100, L"Operator %zi", iop + 1);
+    swprintf_s(hdr, 100, L"OP %zi", iop + 1);
     auto msrheader = d2d->MeasureString(d2d->WriteFa.get(), d2d->Text, hdr);
 
     float hmarg = 10 + std::get<1>(msrheader) + std::max(nin(), nout()) * 10;
@@ -97,6 +97,22 @@ void XLNODE::Draw(ID2D1DeviceContext5* r, D2D* d2d, size_t iop)
     hit.bottom = rtext.bottom + hmarg;
     r->DrawTextW(name().c_str(), (UINT32)name().length(), d2d->Text, rtext, d2d->BlackBrush);
     D2D1_ROUNDED_RECT rr = { hit, 10,10 };
+    if (IsInput())
+    {
+        d2d->CyanBrush->SetOpacity(0.2f);
+        d2d->RedBrush->SetOpacity(0.2f);
+        r->FillRoundedRectangle(rr, S ? d2d->RedBrush : d2d->CyanBrush);
+        d2d->RedBrush->SetOpacity(1.0f);
+        d2d->CyanBrush->SetOpacity(1.0f);
+    }
+    if (IsOutput())
+    {
+        d2d->GreenBrush->SetOpacity(0.2f);
+        d2d->RedBrush->SetOpacity(0.2f);
+        r->FillRoundedRectangle(rr, S ? d2d->RedBrush : d2d->GreenBrush);
+        d2d->RedBrush->SetOpacity(1.0f);
+        d2d->GreenBrush->SetOpacity(1.0f);
+    }
     r->DrawRoundedRectangle(rr, S ? d2d->RedBrush : d2d->BlackBrush);
 
     if (1)
@@ -370,6 +386,29 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
     if (1)
     {
         winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubItem A;
+        A.Text(L"D");
+
+        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Divide"); Neg.Click(fooo);
+        A.Items().Append(Neg);
+
+        r1.Items().Append(A);
+    }
+
+    if (1)
+    {
+        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubItem A;
+        A.Text(L"M");
+
+        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Multiply"); Neg.Click(fooo);
+        A.Items().Append(Neg);
+
+        r1.Items().Append(A);
+    }
+
+
+    if (1)
+    {
+        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubItem A;
         A.Text(L"N");
 
         winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Neg"); Neg.Click(fooo);
@@ -377,6 +416,18 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
 
         r1.Items().Append(A);
     }
+
+    if (1)
+    {
+        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubItem A;
+        A.Text(L"S");
+
+        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Subtract"); Neg.Click(fooo);
+        A.Items().Append(Neg);
+
+        r1.Items().Append(A);
+    }
+
 
 
     if (1)
@@ -725,63 +776,63 @@ namespace winrt::DirectMLGraph::implementation
                                 }
                                 if (t == L"Abs")
                                 {
-                                    auto node = std::make_shared<XLNODE_11>(TYPE_ABS);
+                                    auto node = std::make_shared<XLNODE_ANY>(1,TYPE_ABS);
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
                                 if (t == L"ACos")
                                 {
-                                    auto node = std::make_shared<XLNODE_11>(TYPE_ACOS);
+                                    auto node = std::make_shared<XLNODE_ANY>(1,TYPE_ACOS);
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
                                 if (t == L"ACosh")
                                 {
-                                    auto node = std::make_shared<XLNODE_11>(TYPE_ACOSH);
+                                    auto node = std::make_shared<XLNODE_ANY>(1,TYPE_ACOSH);
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
                                 if (t == L"ASin")
                                 {
-                                    auto node = std::make_shared<XLNODE_11>(TYPE_ASIN);
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_ASIN);
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
                                 if (t == L"ASinh")
                                 {
-                                    auto node = std::make_shared<XLNODE_11>(TYPE_ASINH);
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_ASINH);
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
                                 if (t == L"ATan")
                                 {
-                                    auto node = std::make_shared<XLNODE_11>(TYPE_ATAN);
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_ATAN);
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
                                 if (t == L"ATanh")
                                 {
-                                    auto node = std::make_shared<XLNODE_11>(TYPE_ATANH);
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_ATANH);
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
                                 if (t == L"ATanYX")
                                 {
-                                    auto node = std::make_shared<XLNODE_21>(TYPE_ATANYX);
+                                    auto node = std::make_shared<XLNODE_ANY>(2,TYPE_ATANYX);
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
                                 if (t == L"Add")
                                 {
-                                    auto node = std::make_shared<XLNODE_21>(TYPE_ADD);
+                                    auto node = std::make_shared<XLNODE_ANY>(2, TYPE_ADD);
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
@@ -790,49 +841,49 @@ namespace winrt::DirectMLGraph::implementation
 
                                 if (t == L"BitAnd")
                                 {
-                                    auto node = std::make_shared<XLNODE_21>(TYPE_BITAND);
+                                    auto node = std::make_shared<XLNODE_ANY>(2, TYPE_BITAND);
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
                                 if (t == L"BitCount")
                                 {
-                                    auto node = std::make_shared<XLNODE_11>(TYPE_BITAND);
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_BITAND);
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
                                 if (t == L"BitNot")
                                 {
-                                    auto node = std::make_shared<XLNODE_11>(TYPE_BITNOT);
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_BITNOT);
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
                                 if (t == L"BitOr")
                                 {
-                                    auto node = std::make_shared<XLNODE_21>(TYPE_BITOR);
+                                    auto node = std::make_shared<XLNODE_ANY>(2, TYPE_BITOR);
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
                                 if (t == L"BitShiftLeft")
                                 {
-                                    auto node = std::make_shared<XLNODE_21>(TYPE_BITSL);
+                                    auto node = std::make_shared<XLNODE_ANY>(2, TYPE_BITSL);
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
                                 if (t == L"BitShiftRight")
                                 {
-                                    auto node = std::make_shared<XLNODE_21>(TYPE_BITSR);
+                                    auto node = std::make_shared<XLNODE_ANY>(2, TYPE_BITSR);
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
                                 if (t == L"BitXor")
                                 {
-                                    auto node = std::make_shared<XLNODE_21>(TYPE_BITXOR);
+                                    auto node = std::make_shared<XLNODE_ANY>(2, TYPE_BITXOR);
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
@@ -840,37 +891,66 @@ namespace winrt::DirectMLGraph::implementation
 
                                 if (t == L"Ceil")
                                 {
-                                    auto node = std::make_shared<XLNODE_11>(TYPE_CEIL);
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_CEIL);
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
                                 if (t == L"Clip")
                                 {
-                                    auto node = std::make_shared<XLNODE_CLIP>();
+                                    auto node = std::make_shared<XLNODE_ANY>(1,TYPE_CLIP);
+
+                                    node->Params.resize(2);
+                                    node->Params[0].n = L"Min";
+                                    node->Params[0].v = 0.0f;
+                                    node->Params[1].n = L"Max";
+                                    node->Params[1].v = 1.0f;
+
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
                                 if (t == L"Cos")
                                 {
-                                    auto node = std::make_shared<XLNODE_11>(TYPE_COS);
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_COS);
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
                                 if (t == L"Cosh")
                                 {
-                                    auto node = std::make_shared<XLNODE_11>(TYPE_COSH);
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_COSH);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+                                if (t == L"Divide")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(2, TYPE_DIVIDE);
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
 
 
+                                if (t == L"Multiply")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(2, TYPE_MULTIPLY);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
                                 if (t == L"Neg")
                                 {
-                                    auto node = std::make_shared<XLNODE_11>(TYPE_NEGATE);
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_NEGATE);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+
+                                if (t == L"Subtract")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(2, TYPE_SUBTRACT);
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
@@ -1072,6 +1152,8 @@ namespace winrt::DirectMLGraph::implementation
             d2d->m_d2dContext->CreateSolidColorBrush({ 1,0,0,1 }, &d2d->RedBrush);
         if (!d2d->CyanBrush)
             d2d->m_d2dContext->CreateSolidColorBrush({0,0,1,1 }, &d2d->CyanBrush);
+        if (!d2d->GreenBrush)
+            d2d->m_d2dContext->CreateSolidColorBrush({ 0,1,0,1 }, &d2d->GreenBrush);
         if (!d2d->YellowBrush)
             d2d->m_d2dContext->CreateSolidColorBrush({ 1,1,0,1 }, &d2d->YellowBrush);
         if (!d2d->SnapBrush2)
@@ -1521,10 +1603,13 @@ namespace winrt::DirectMLGraph::implementation
                     dml::Expression expr;
                     bool Y = false;
 
-                    if (auto it = std::dynamic_pointer_cast<XLNODE_11>(node))
+                    if (auto it = std::dynamic_pointer_cast<XLNODE_ANY>(node))
                     {
-                        if (whati.size() != 1)
+                        if (whati.size() == 0)
                             continue;
+                        if (it->nin() != whati.size())
+                            continue;
+
                         if (it->what == TYPE_ABS)
                             expr = dml::Abs(mop.Item(whati[0]));
                         if (it->what == TYPE_ACOS)
@@ -1556,14 +1641,9 @@ namespace winrt::DirectMLGraph::implementation
                         if (it->what == TYPE_COSH)
                             expr = (dml::Cosh(mop.Item(whati[0])));
 
+
                         if (it->what == TYPE_NEGATE)
                             expr = (dml::Negate(mop.Item(whati[0])));
-                        Y = 1;
-                    }
-                    if (auto it = std::dynamic_pointer_cast<XLNODE_21>(node))
-                    {
-                        if (whati.size() != 2)
-                            continue;
                         
                         if (it->what == TYPE_ADD)
                             expr = (dml::Add(mop.Item(whati[0]), mop.Item(whati[1])));
@@ -1580,12 +1660,18 @@ namespace winrt::DirectMLGraph::implementation
                             expr = (dml::BitShiftRight(mop.Item(whati[0]), mop.Item(whati[1])));
                         if (it->what == TYPE_BITXOR)
                             expr = (dml::BitXor(mop.Item(whati[0]), mop.Item(whati[1])));
+
+                        if (it->what == TYPE_DIVIDE)
+                            expr = (dml::Divide(mop.Item(whati[0]), mop.Item(whati[1])));
+
+                        if (it->what == TYPE_MULTIPLY)
+                            expr = (dml::Multiply(mop.Item(whati[0]), mop.Item(whati[1])));
+
                         Y = 1;
                     }
 
                     if (Y)
                     {
-                        //return AddItem(td, tag, 0, BINDING_MODE::NONE, {}, 0);
                         LPARAM tag = 0;
                         bool NB = 0;
                         BINDING_MODE BI = BINDING_MODE::NONE;

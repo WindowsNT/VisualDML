@@ -111,7 +111,8 @@ struct D2D
 	CComPtr<ID2D1SolidColorBrush> WhiteBrush;
 	CComPtr<ID2D1SolidColorBrush> YellowBrush;
 	CComPtr<ID2D1SolidColorBrush> RedBrush;
-	CComPtr<ID2D1SolidColorBrush> CyanBrush;
+    CComPtr<ID2D1SolidColorBrush> CyanBrush;
+    CComPtr<ID2D1SolidColorBrush> GreenBrush;
 	CComPtr<ID2D1SolidColorBrush> BlackBrush;
 	CComPtr<ID2D1SolidColorBrush> BGBrush;
 	CComPtr<IDWriteTextFormat> Text;

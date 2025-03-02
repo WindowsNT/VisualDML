@@ -64,26 +64,32 @@ enum XLNODE_TYPE
     TYPE_BITAND,TYPE_BITCOUNT,TYPE_BITNOT,TYPE_BITOR,TYPE_BITSL,TYPE_BITSR,TYPE_BITXOR,
     TYPE_CEIL,TYPE_CLIP, TYPE_COS, TYPE_COSH,
 
+
     TYPE_NEGATE,
 
     TYPE_ADD = 50000, 
     TYPE_ATANYX,
+    TYPE_DIVIDE, TYPE_MULTIPLY,
+
+    TYPE_SUBTRACT,
 
     TYPE_OUTPUT = 999999
 };
 
 
-template <int NI = 1>
 struct XLNODE_ANY : public XLNODE
 {
     int what = 0;
+    int howi = 0;
 
-    virtual int nin() { return NI; }
+
+    virtual int nin() { return howi; }
     virtual int nout() { return 1; }
 
 
-    XLNODE_ANY(int w)
+    XLNODE_ANY(int NI,int w)
     {
+        howi = NI;
         for (int i = 0; i < NI; i++)
         {
             XLNODEBULLET bu;
@@ -145,10 +151,17 @@ struct XLNODE_ANY : public XLNODE
         if (what == TYPE_COSH)
             return L"Cosh";
 
+		if (what == TYPE_DIVIDE)
+			return L"Divide";
 
+		if (what == TYPE_MULTIPLY)
+			return L"Multiply";
 
         if (what == TYPE_NEGATE)
             return L"Neg";
+
+		if (what == TYPE_SUBTRACT)
+			return L"Subtract";
 
         return L"Unknown";
     }
@@ -175,6 +188,7 @@ struct XLNODE_ANY : public XLNODE
     virtual void Ser(XML3::XMLElement& ee)
     {
         XLNODE::Ser(ee);
+        ee.vv("ni").SetValueInt(nin());
         ee.vv("Type").SetValueInt(what);
 		for (auto& p : Params)
 		{
@@ -202,26 +216,6 @@ struct XLNODE_ANY : public XLNODE
 
 
 
-using XLNODE_11 = XLNODE_ANY<1>;
-using XLNODE_21 = XLNODE_ANY<2>;
-using XLNODE_31 = XLNODE_ANY<3>;
-using XLNODE_41 = XLNODE_ANY<4>;
-using XLNODE_51 = XLNODE_ANY<5>;
-
-struct XLNODE_CLIP : public XLNODE_11
-{
-
-	XLNODE_CLIP(int = TYPE_CLIP) : XLNODE_11(TYPE_CLIP)
-	{
-        Params.resize(2);
-		Params[0].n = L"Min";
-        Params[0].v = 0.0f;
-        Params[1].n = L"Max";
-        Params[1].v = 1.0f;
-	}
-
-
-};
 
 
 struct XLNODE_OUTPUT : public XLNODE
@@ -360,25 +354,15 @@ struct XLOP : public XLNODE
                 nodes.push_back(n);
             }
             else
-            if (nty == TYPE_CLIP)
             {
-                auto n = std::make_shared<XLNODE_CLIP>(nty);
+				int ni = ne->vv("ni").GetValueInt();
+                if (ni == 0)
+                    ni = 1;
+                auto n = std::make_shared<XLNODE_ANY>(ni, nty);
                 n->Unser(*ne);
                 nodes.push_back(n);
             }
-            else
-            if (nty == TYPE_ADD || nty == TYPE_ATANYX || nty == TYPE_BITAND || nty == TYPE_BITOR || nty == TYPE_BITSL || nty == TYPE_BITSR || nty == TYPE_BITXOR)
-            {
-                auto n = std::make_shared<XLNODE_21>(nty);
-                n->Unser(*ne);
-                nodes.push_back(n);
-            }
-            else
-			{
-				auto n = std::make_shared<XLNODE_11>(nty);
-				n->Unser(*ne);
-				nodes.push_back(n);
-			}
+
 		}
 		data_type = (DML_TENSOR_DATA_TYPE)e.vv("DataType").GetValueInt();
 	}

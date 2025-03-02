@@ -12,8 +12,13 @@ B: BitAnd, BitCount, BitOr, BitNot, BitShiftLeft, BitShiftRight, BitXor
 
 C: Ceil, Clip, Cos, Cosh
 
+D: Divide
+
+M: Multiply
+
 N: Neg
 
+S: Subtract
 
 ### Pending
 
