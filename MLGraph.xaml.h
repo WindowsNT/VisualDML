@@ -18,13 +18,22 @@ struct XLNODEBULLET
     std::vector<unsigned long long> g;
 };
 
+struct PARAM
+{
+    std::wstring n;
+    float v = 0;
+};
+
 struct XLNODE
 {
 
     int tidx = 0; // idx in MLOP
+    std::vector<PARAM> Params;
 
 
-	std::vector<XLNODEBULLET> children;
+    std::wstring csv_input;
+    std::wstring csv_output;
+    std::vector<XLNODEBULLET> children;
 
     virtual bool IsInput() { return false; }
     virtual bool IsOutput() { return false; }
@@ -36,7 +45,7 @@ struct XLNODE
 
     virtual int nin() { return 0; }
     virtual int nout() { return 0; }
-    virtual void Draw(ID2D1DeviceContext5* r, D2D* d2d);
+    virtual void Draw(ID2D1DeviceContext5* r, D2D* d2d,size_t iop);
 
 };
 
@@ -45,7 +54,8 @@ enum XLNODE_TYPE
     TYPE_INPUT = 1,
     TYPE_ABS,TYPE_ACOS,TYPE_ACOSH,TYPE_ASIN,TYPE_ASINH,TYPE_ATAN,TYPE_ATANH,
 
-    TYPE_BITAND,
+    TYPE_BITAND,TYPE_BITCOUNT,TYPE_BITNOT,TYPE_BITOR,TYPE_BITSL,TYPE_BITSR,TYPE_BITXOR,
+    TYPE_CEIL,TYPE_CLIP, TYPE_COS, TYPE_COSH,
 
     TYPE_NEGATE,
 
@@ -55,6 +65,7 @@ enum XLNODE_TYPE
     TYPE_OUTPUT = 999999
 };
 
+
 template <int NI = 1>
 struct XLNODE_ANY : public XLNODE
 {
@@ -62,6 +73,7 @@ struct XLNODE_ANY : public XLNODE
 
     virtual int nin() { return NI; }
     virtual int nout() { return 1; }
+
 
     XLNODE_ANY(int w)
     {
@@ -79,7 +91,7 @@ struct XLNODE_ANY : public XLNODE
         what = w;
     }
 
-    virtual std::wstring name()
+    virtual std::wstring opname()
     {
 		if (what == TYPE_ABS)
 			return L"Abs";
@@ -101,8 +113,32 @@ struct XLNODE_ANY : public XLNODE
             return L"ATanYX";
 
 
+
         if (what == TYPE_BITAND)
             return L"BitAnd";
+        if (what == TYPE_BITCOUNT)
+            return L"BitCount";
+        if (what == TYPE_BITNOT)
+            return L"BitNot";
+        if (what == TYPE_BITOR)
+            return L"BitOr";
+		if (what == TYPE_BITSL)
+			return L"BitSL";
+		if (what == TYPE_BITSR)
+			return L"BitSR";
+		if (what == TYPE_BITXOR)
+			return L"BitXor";
+
+        if (what == TYPE_CEIL)
+            return L"Ceil";
+        if (what == TYPE_CLIP)
+            return L"Clip";
+        if (what == TYPE_COS)
+            return L"Cos";
+        if (what == TYPE_COSH)
+            return L"Cosh";
+
+
 
         if (what == TYPE_NEGATE)
             return L"Neg";
@@ -110,20 +146,54 @@ struct XLNODE_ANY : public XLNODE
         return L"Unknown";
     }
 
+    virtual std::wstring name()
+    {
+        auto n = opname();
+        wchar_t t[1000] = {};
+        if (csv_output.length())
+		{
+			n += L"\r\n";
+			n += csv_output;
+		}
+        for(auto& p : Params)
+        {
+            swprintf_s(t, 1000, L"\r\n%s: %.2f", p.n.c_str(),p.v);
+            n += t;
+        }
+        return n;
+    }
+
+
 
     virtual void Ser(XML3::XMLElement& ee)
     {
         XLNODE::Ser(ee);
         ee.vv("Type").SetValueInt(what);
+		for (auto& p : Params)
+		{
+			auto& pe = ee["Params"].AddElement("Param");
+			pe.vv("Name").SetWideValue(p.n.c_str());
+			pe.vv("Value").SetValueFloat(p.v);
+		}
     }
 
     virtual void Unser(XML3::XMLElement& e)
     {
         XLNODE::Unser(e);
+        Params.clear();
+        for (auto& pe : e["Params"])
+        {
+            PARAM p;
+			p.n = pe.vv("Name").GetWideValue();
+			p.v = pe.vv("Value").GetValueFloat();
+			Params.push_back(p);
+        }
     }
 
 
 };
+
+
 
 using XLNODE_11 = XLNODE_ANY<1>;
 using XLNODE_21 = XLNODE_ANY<2>;
@@ -131,13 +201,27 @@ using XLNODE_31 = XLNODE_ANY<3>;
 using XLNODE_41 = XLNODE_ANY<4>;
 using XLNODE_51 = XLNODE_ANY<5>;
 
+struct XLNODE_CLIP : public XLNODE_11
+{
+
+	XLNODE_CLIP(int = TYPE_CLIP) : XLNODE_11(TYPE_CLIP)
+	{
+        Params.resize(2);
+		Params[0].n = L"Min";
+        Params[0].v = 0.0f;
+        Params[1].n = L"Max";
+        Params[1].v = 1.0f;
+	}
+
+
+};
+
 
 struct XLNODE_OUTPUT : public XLNODE
 {
     virtual int nin() { return 1; }
     virtual int nout() { return 0; }
 
-    std::wstring csv_output;
     virtual bool IsOutput() { return true; }
 
     XLNODE_OUTPUT()
@@ -162,13 +246,11 @@ struct XLNODE_OUTPUT : public XLNODE
     virtual void Ser(XML3::XMLElement& ee)
     {
         XLNODE::Ser(ee);
-        ee.vv("CSV").SetWideValue(csv_output.c_str());
         ee.vv("Type").SetValueInt(TYPE_OUTPUT);
     }
 
     virtual void Unser(XML3::XMLElement& e)
     {
-		csv_output = e.vv("CSV").GetWideValue();
         XLNODE::Unser(e);
     }
 
@@ -181,7 +263,6 @@ struct XLNODE_INPUT : public XLNODE
 
     virtual bool IsInput() { return true; }
 
-    std::wstring csv_input;
 
     XLNODE_INPUT()
     {
@@ -213,7 +294,6 @@ struct XLNODE_INPUT : public XLNODE
     {
         XLNODE::Ser(ee);
         ee.vv("Type").SetValueInt(TYPE_INPUT);
-		ee.vv("CSV").SetWideValue(csv_input.c_str()); 
         for (auto& d : tensor_dims)
         {
             auto& de = ee["Dimensions"].AddElement("Dimension");
@@ -272,7 +352,14 @@ struct XLOP : public XLNODE
                 nodes.push_back(n);
             }
             else
-            if (nty == TYPE_ADD || nty == TYPE_ATANYX || nty == TYPE_BITAND)
+            if (nty == TYPE_CLIP)
+            {
+                auto n = std::make_shared<XLNODE_CLIP>(nty);
+                n->Unser(*ne);
+                nodes.push_back(n);
+            }
+            else
+            if (nty == TYPE_ADD || nty == TYPE_ATANYX || nty == TYPE_BITAND || nty == TYPE_BITOR || nty == TYPE_BITSL || nty == TYPE_BITSR || nty == TYPE_BITXOR)
             {
                 auto n = std::make_shared<XLNODE_21>(nty);
                 n->Unser(*ne);
@@ -353,7 +440,7 @@ namespace winrt::DirectMLGraph::implementation
         XL xl;
         std::stack<XML3::XMLElement> undo_list;
         std::stack<XML3::XMLElement> redo_list;
-        size_t ActiveOperator = (size_t)-1;
+        size_t ActiveOperator2 = (size_t)-1;
         std::shared_ptr<D2D> d2d;
         MLGraph()
         {

@@ -14,12 +14,17 @@ using namespace winrt::Microsoft::UI::Xaml::Controls;
 
 
 bool MovingNode = 0;
+int WhatInput = 0;
+PARAM* WhatParam = 0;
 D2D1_POINT_2F red_from = { 0,0 }, red_to = { 0,0 };
 void XLNODE::Ser(XML3::XMLElement& e)
 {
     // Hit
     e.vv("xx").SetValueFloat(hit.left);
     e.vv("yy").SetValueFloat(hit.top);
+    e.vv("CSV").SetWideValue(csv_output.c_str());
+    e.vv("CSVI").SetWideValue(csv_input.c_str());
+
 
     auto& ch = e["Children"];
     for (auto& c : children)
@@ -46,6 +51,8 @@ void XLNODE::Ser(XML3::XMLElement& e)
 void XLNODE::Unser(XML3::XMLElement& e)
 {
     hit.left = e.vv("xx").GetValueFloat();
+    csv_output = e.vv("CSV").GetWideValue();
+	csv_input = e.vv("CSVI").GetWideValue();
     hit.top = e.vv("yy").GetValueFloat();
 
     children.clear();
@@ -68,19 +75,33 @@ void XLNODE::Unser(XML3::XMLElement& e)
     }
 }
 
-void XLNODE::Draw(ID2D1DeviceContext5* r, D2D* d2d)
+void XLNODE::Draw(ID2D1DeviceContext5* r, D2D* d2d, size_t iop)
 {
 	TEXTALIGNPUSH tep(d2d->Text, DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
     auto msr = d2d->MeasureString(d2d->WriteFa.get(), d2d->Text, name().c_str());
     if (std::get<0>(msr) <= 100)
 		std::get<0>(msr) = 100;
-    int hmarg = 10 + std::max(nin(), nout()) * 10;
+
+
+    wchar_t hdr[100] = {};
+    swprintf_s(hdr, 100, L"Operator %zi", iop + 1);
+    auto msrheader = d2d->MeasureString(d2d->WriteFa.get(), d2d->Text, hdr);
+
+    float hmarg = 10 + std::get<1>(msrheader) + std::max(nin(), nout()) * 10;
     D2D1_RECT_F rtext = { hit.left + 10, hit.top + hmarg, hit.left + 10 + std::get<0>(msr), hit.top + hmarg + std::get<1>(msr) };
     hit.right = rtext.right + 10;
     hit.bottom = rtext.bottom + hmarg;
     r->DrawTextW(name().c_str(), (UINT32)name().length(), d2d->Text, rtext, d2d->BlackBrush);
     D2D1_ROUNDED_RECT rr = { hit, 10,10 };
     r->DrawRoundedRectangle(rr, S ? d2d->RedBrush : d2d->BlackBrush);
+
+    if (1)
+    {
+		D2D1_POINT_2F left = { hit.left + 5, hit.top + std::get<1>(msrheader) + 5};
+		D2D1_POINT_2F right = { hit.right - 5, left.y };
+		r->DrawLine(left, right, d2d->BlackBrush,0.3f);
+		r->DrawTextW(hdr, (UINT32)wcslen(hdr), d2d->Text, D2D1_RECT_F({ hit.left + 5, hit.top + 5, hit.right - 5, hit.top + std::get<1>(msrheader) + 5 }), d2d->BlackBrush);
+    }
 
 	children.resize(nin() + nout());    
 
@@ -156,7 +177,7 @@ void XLNODE::Draw(ID2D1DeviceContext5* r, D2D* d2d)
     }
 }
 
-winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildNodeRightMenu(int Type,std::function<void(const winrt::Windows::Foundation::IInspectable, const winrt::Windows::Foundation::IInspectable)> fooo)
+winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildNodeRightMenu(std::shared_ptr<XLNODE> nd,int Type,std::function<void(const winrt::Windows::Foundation::IInspectable, const winrt::Windows::Foundation::IInspectable)> fooo)
 {
     winrt::Microsoft::UI::Xaml::Controls::MenuFlyout r1;
 
@@ -165,14 +186,30 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildNodeRightMenu(int Type,std
     {
         winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem O; O.Text(L"CSV input..."); O.Click(fooo);
         r1.Items().Append(O);
+        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSeparator s;
+        r1.Items().Append(s);
+    }
+
+    if (1)
+    {
+        for (size_t i = 0; i < nd->Params.size(); i++)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem O;
+            O.Text(nd->Params[i].n.c_str());
+            O.Tag(winrt::box_value(i + 2000));
+            O.Click(fooo);
+            r1.Items().Append(O);
+        }
     }
 
     if (Type == 2)
     {
     }
 
-    if (Type == 3)
+    if (Type  == 1 || Type == 2 || Type == 3)
     {
+        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSeparator s;
+        r1.Items().Append(s);
         winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem O; O.Text(L"CSV output..."); O.Click(fooo);
         r1.Items().Append(O);
     }
@@ -191,6 +228,8 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
     {
         winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem O; O.Text(L"Input"); O.Click(fooo);
         r1.Items().Append(O);
+        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSeparator s;
+		r1.Items().Append(s);
     }
 
     if (1)
@@ -233,8 +272,69 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
 
         winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem BitAnd; BitAnd.Text(L"BitAnd"); BitAnd.Click(fooo);
         A.Items().Append(BitAnd);
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem b3; b3.Text(L"BitCount"); b3.Click(fooo);
+            A.Items().Append(b3);
+        }
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem b3; b3.Text(L"BitNot"); b3.Click(fooo);
+            A.Items().Append(b3);
+        }
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem b3; b3.Text(L"BitOr"); b3.Click(fooo);
+            A.Items().Append(b3);
+        }
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem b3; b3.Text(L"BitShiftLeft"); b3.Click(fooo);
+            A.Items().Append(b3);
+        }
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem b3; b3.Text(L"BitShiftRight"); b3.Click(fooo);
+            A.Items().Append(b3);
+        }
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem b3; b3.Text(L"BitXor"); b3.Click(fooo);
+            A.Items().Append(b3);
+        }
+
 
         r1.Items().Append(A);
+    }
+
+    if (1)
+    {
+        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubItem A;
+        A.Text(L"C");
+
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem N; N.Text(L"Ceil"); N.Click(fooo);
+            A.Items().Append(N);
+        }
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem N; N.Text(L"Clip"); N.Click(fooo);
+            A.Items().Append(N);
+        }
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem N; N.Text(L"Cos"); N.Click(fooo);
+            A.Items().Append(N);
+        }
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem N; N.Text(L"Cosh"); N.Click(fooo);
+            A.Items().Append(N);
+        }
+        r1.Items().Append(A);
+
+
     }
 
     if (1)
@@ -251,6 +351,8 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
 
     if (1)
     {
+        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSeparator s;
+        r1.Items().Append(s);
         winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem O; O.Text(L"Output"); O.Click(fooo);
         r1.Items().Append(O);
     }
@@ -279,8 +381,6 @@ namespace winrt::DirectMLGraph::implementation
             for (size_t i = 0; i < xl.ops.size(); i++)
             {
                 auto& op = xl.ops[i];
-                if (i != ActiveOperator)
-                    continue;
                 for (size_t ii = 0; ii < op.nodes.size(); ii++)
                 {
                     if (op.nodes[ii]->S)
@@ -310,7 +410,7 @@ namespace winrt::DirectMLGraph::implementation
     {
 		if (xl.ops.empty())
             xl.ops.push_back(XLOP());
-        ActiveOperator = 0;
+        ActiveOperator2 = 0;
 
         auto sp = Content().as<Panel>();
         auto scp = sp.FindName(L"scp").as<SwapChainPanel>();
@@ -340,8 +440,6 @@ namespace winrt::DirectMLGraph::implementation
                 for (size_t i = 0; i < xl.ops.size(); i++)
                 {
                     auto& op = xl.ops[i];
-                    if (i != ActiveOperator)
-                        continue;
                     for (size_t ii = 0; ii < op.nodes.size(); ii++)
                     {
                         for (size_t iii = 0; iii < op.nodes[ii]->children.size(); iii++)
@@ -381,27 +479,31 @@ namespace winrt::DirectMLGraph::implementation
                 auto pt = a.GetCurrentPoint(scp);
                 static auto pos = pt.Position();
                 pos = pt.Position();
+                if (xl.ops.empty())
+                    return;
 
-				auto& op = xl.ops[ActiveOperator];
-                for (auto& nod : op.nodes)
+                for (auto& op : xl.ops)
                 {
-                    for (auto& ch : nod->children)
+                    for (auto& nod : op.nodes)
                     {
-                        if (ch.S && ch.O == 1)
+                        for (auto& ch : nod->children)
                         {
-                            // Connected now
-                            for (auto& nod2 : op.nodes)
+                            if (ch.S && ch.O == 1)
                             {
-                                for (auto& ch2 : nod2->children)
+                                // Connected now
+                                for (auto& nod2 : op.nodes)
                                 {
-									if (ch2.O == 0 && Hit(pos.X,pos.Y,ch2.hit ))
-									{
-                                        Push();
-                                        ch2.g.clear();
-                                        auto ne = nextn();
-										ch2.g.push_back(ne);
-										ch.g.push_back(ne);
-                                        nod->S = 0;
+                                    for (auto& ch2 : nod2->children)
+                                    {
+                                        if (ch2.O == 0 && Hit(pos.X, pos.Y, ch2.hit))
+                                        {
+                                            Push();
+                                            ch2.g.clear();
+                                            auto ne = nextn();
+                                            ch2.g.push_back(ne);
+                                            ch.g.push_back(ne);
+                                            nod->S = 0;
+                                        }
                                     }
                                 }
                             }
@@ -430,10 +532,6 @@ namespace winrt::DirectMLGraph::implementation
                     for (size_t i = 0; i < xl.ops.size(); i++)
                     {
                         auto& op = xl.ops[i];
-						if (i != ActiveOperator)
-							continue;
-
-
                         for (size_t ii = 0; ii < op.nodes.size(); ii++)
                         {
                             auto& nod = op.nodes[ii];
@@ -448,18 +546,36 @@ namespace winrt::DirectMLGraph::implementation
 
                             if (Hit(pos.X, pos.Y, nod->hit))
                             {
-                                int ty = 0;
+                                int ty = 2;
 								if (nod->IsInput())
 									ty = 1;
                                 if (nod->IsOutput())
                                     ty = 3;
-                                auto m = BuildNodeRightMenu(ty,[this, i,ii](const winrt::Windows::Foundation::IInspectable from, const winrt::Windows::Foundation::IInspectable)
+                                auto m = BuildNodeRightMenu(nod,ty,[this, i,ii](const winrt::Windows::Foundation::IInspectable from, const winrt::Windows::Foundation::IInspectable)
                                     {
                                         auto& op = xl.ops[i];
                                         auto& nod = op.nodes[ii];
                                         MenuFlyoutItem m = from.as<MenuFlyoutItem>();
                                         auto t = m.Text();
                                         std::vector<wchar_t> fnx(10000);
+										auto tag = m.Tag();
+                                        if (tag)
+                                        {
+                                            // unbox it
+											auto i3 = winrt::unbox_value<size_t>(tag);
+                                            if (i3 >= 2000)
+                                            {
+                                                auto pidx = i3 - 2000;
+                                                WhatInput = 2;
+                                                _i0 = nod->Params[pidx].n;
+												_i1 = std::to_wstring(nod->Params[pidx].v);
+                                                WhatParam = &nod->Params[pidx];
+                                                Refresh({ L"i1",L"i0" });
+                                                auto sp = Content().as<Panel>();
+                                                auto ct = sp.FindName(L"Input1").as<ContentDialog>();
+                                                ct.ShowAsync();
+                                            }
+                                        }
                                         if (t == L"CSV input...")
                                         {
 											auto it = std::dynamic_pointer_cast<XLNODE_INPUT>(nod);
@@ -478,7 +594,7 @@ namespace winrt::DirectMLGraph::implementation
                                         }
                                         if (t == L"CSV output...")
                                         {
-                                            auto it = std::dynamic_pointer_cast<XLNODE_OUTPUT>(nod);
+                                            auto it = std::dynamic_pointer_cast<XLNODE>(nod);
                                             wcscpy_s(fnx.data(), 10000, it->csv_output.c_str());
                                             OPENFILENAME of = { 0 };
                                             of.lStructSize = sizeof(of);
@@ -583,6 +699,78 @@ namespace winrt::DirectMLGraph::implementation
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
+                                if (t == L"BitCount")
+                                {
+                                    auto node = std::make_shared<XLNODE_11>(TYPE_BITAND);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+                                if (t == L"BitNot")
+                                {
+                                    auto node = std::make_shared<XLNODE_11>(TYPE_BITNOT);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+                                if (t == L"BitOr")
+                                {
+                                    auto node = std::make_shared<XLNODE_21>(TYPE_BITOR);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+                                if (t == L"BitShiftLeft")
+                                {
+                                    auto node = std::make_shared<XLNODE_21>(TYPE_BITSL);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+                                if (t == L"BitShiftRight")
+                                {
+                                    auto node = std::make_shared<XLNODE_21>(TYPE_BITSR);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+                                if (t == L"BitXor")
+                                {
+                                    auto node = std::make_shared<XLNODE_21>(TYPE_BITXOR);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+
+                                if (t == L"Ceil")
+                                {
+                                    auto node = std::make_shared<XLNODE_11>(TYPE_CEIL);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+                                if (t == L"Clip")
+                                {
+                                    auto node = std::make_shared<XLNODE_CLIP>();
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+                                if (t == L"Cos")
+                                {
+                                    auto node = std::make_shared<XLNODE_11>(TYPE_COS);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+                                if (t == L"Cosh")
+                                {
+                                    auto node = std::make_shared<XLNODE_11>(TYPE_COSH);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+
 
                                 if (t == L"Neg")
                                 {
@@ -606,9 +794,7 @@ namespace winrt::DirectMLGraph::implementation
                                 Refresh();
                             });
                         m.ShowAt(scp, pos);
-                        return;
                     }
-
                     return;
                 }
 
@@ -626,8 +812,6 @@ namespace winrt::DirectMLGraph::implementation
 				for (size_t i = 0; i < xl.ops.size(); i++)
 				{
 					auto& op = xl.ops[i];
-					if (i != ActiveOperator)
-						continue;
                     for (size_t ii = 0; ii < op.nodes.size(); ii++)
                     {
                         for (size_t iii = 0; iii < op.nodes[ii]->children.size(); iii++ )
@@ -812,12 +996,10 @@ namespace winrt::DirectMLGraph::implementation
 		for (size_t i = 0; i < xl.ops.size(); i++)
 		{
 			auto& op = xl.ops[i];
-            if (i != ActiveOperator)
-                continue;
 			for (size_t j = 0; j < op.nodes.size(); j++)
 			{
                 auto& node = op.nodes[j];
-				node->Draw(r, d2d.get());   
+				node->Draw(r, d2d.get(),i);   
 			}
 
             // Output to Input lines
@@ -878,7 +1060,7 @@ namespace winrt::DirectMLGraph::implementation
     {
         Push();
 		xl.ops.push_back(XLOP());
-        ActiveOperator = xl.ops.size() - 1;
+        ActiveOperator2 = xl.ops.size() - 1;
         FullRefresh();
     }
 
@@ -903,10 +1085,10 @@ namespace winrt::DirectMLGraph::implementation
 			mi.Text(ystring().Format(L"Operator %zi",i + 1));
 			mi.Click([this, i](IInspectable const&, RoutedEventArgs const&)
 				{
-					ActiveOperator = i;
+					ActiveOperator2 = i;
 					Refresh();
 				});
-			if (ActiveOperator == i)
+			if (ActiveOperator2 == i)
 				mi.IsChecked(true);
 			m1.Items().Append(mi);
 		}
@@ -922,21 +1104,33 @@ namespace winrt::DirectMLGraph::implementation
 				{
                     Push();
                     xl.ops.erase(xl.ops.begin() + i);
-					if (ActiveOperator >= xl.ops.size())
-						ActiveOperator = xl.ops.size() - 1;
+					if (ActiveOperator2 >= xl.ops.size())
+						ActiveOperator2 = xl.ops.size() - 1;
                     FullRefresh();
 				});
 			m2.Items().Append(mi);
         }
     }
 
-    int WhatInput = 0;
     void MLGraph::Input_Completed(IInspectable, IInspectable)
     {
+        if (WhatInput == 2 && WhatParam)
+        {
+            try
+            {
+                WhatParam->v = std::stof(_i1);
+            }
+            catch (...)
+            {
+
+            }
+			FullRefresh();
+            return;
+        }
         if (WhatInput == 1)
         {
             // Input Tensor Dimensions
-            auto& op = xl.ops[ActiveOperator];
+            auto& op = xl.ops[ActiveOperator2];
             std::vector<unsigned int> dims; // convert string to dims, split in x
             std::vector<std::wstring> split(const std::wstring & s, wchar_t delim);
 
@@ -972,7 +1166,7 @@ namespace winrt::DirectMLGraph::implementation
     }
     void MLGraph::OnAddOutput(IInspectable const&, IInspectable const&)
     {
-		auto& op = xl.ops[ActiveOperator];
+		auto& op = xl.ops[ActiveOperator2];
         auto node = std::make_shared<XLNODE_OUTPUT>();
         op.nodes.push_back(node);
         FullRefresh();
@@ -1037,7 +1231,7 @@ namespace winrt::DirectMLGraph::implementation
             auto& mlop = ml.ops[iop];
             for (auto& node : op.nodes)
             {
-                if (auto it = std::dynamic_pointer_cast<XLNODE_OUTPUT>(node))
+                if (auto it = std::dynamic_pointer_cast<XLNODE>(node))
                 {
                     if (it->csv_output.length())
                     {
@@ -1072,10 +1266,10 @@ namespace winrt::DirectMLGraph::implementation
         ml = {};
         try
         {
-            int tidx = 0;
             ml.On();
             for (size_t i = 0; i < xl.ops.size(); i++)
             {
+                int tidx = 0;
                 auto& op = xl.ops[i];
                 MLOP mop(&ml);
 
@@ -1146,23 +1340,45 @@ namespace winrt::DirectMLGraph::implementation
                     {
                         if (whati.size() != 1)
                             continue;
+                        dml::Expression expr;
                         if (it->what == TYPE_ABS)
-                            mop.AddIntermediate(dml::Abs(mop.Item(whati[0])));
+                            expr = dml::Abs(mop.Item(whati[0]));
                         if (it->what == TYPE_ACOS)
-                            mop.AddIntermediate(dml::ACos(mop.Item(whati[0])));
+                            expr = (dml::ACos(mop.Item(whati[0])));
                         if (it->what == TYPE_ACOSH)
-                            mop.AddIntermediate(dml::ACosh(mop.Item(whati[0])));
+                            expr = (dml::ACosh(mop.Item(whati[0])));
                         if (it->what == TYPE_ASIN)
-                            mop.AddIntermediate(dml::ASin(mop.Item(whati[0])));
+                            expr = (dml::ASin(mop.Item(whati[0])));
                         if (it->what == TYPE_ASINH)
-                            mop.AddIntermediate(dml::ASinh(mop.Item(whati[0])));
+                            expr = (dml::ASinh(mop.Item(whati[0])));
                         if (it->what == TYPE_ATAN)
-                            mop.AddIntermediate(dml::ATan(mop.Item(whati[0])));
+                            expr = (dml::ATan(mop.Item(whati[0])));
                         if (it->what == TYPE_ATANH)
-                            mop.AddIntermediate(dml::ATanh(mop.Item(whati[0])));
+                            expr = (dml::ATanh(mop.Item(whati[0])));
+
+
+                        if (it->what == TYPE_BITCOUNT)
+                            expr = (dml::BitCount(mop.Item(whati[0])));
+                        if (it->what == TYPE_BITNOT)
+                            expr = (dml::BitNot(mop.Item(whati[0])));
+
+
+                        if (it->what == TYPE_CEIL)
+                            expr = (dml::Ceil(mop.Item(whati[0])));
+                        if (it->what == TYPE_CLIP)
+                            expr = (dml::Clip(mop.Item(whati[0]),it->Params[0].v, it->Params[1].v));
+                        if (it->what == TYPE_COS)
+                            expr = (dml::Cos(mop.Item(whati[0])));
+                        if (it->what == TYPE_COSH)
+                            expr = (dml::Cosh(mop.Item(whati[0])));
 
                         if (it->what == TYPE_NEGATE)
-                            mop.AddIntermediate(dml::Negate(mop.Item(whati[0])));
+                            expr = (dml::Negate(mop.Item(whati[0])));
+
+                        if (it->csv_output.length())
+                            mop.AddItem(expr,0,true, BINDING_MODE::BIND_OUT);
+                        else
+                            mop.AddIntermediate(expr);
 
                         node->tidx = tidx++;
                         continue;
@@ -1172,13 +1388,29 @@ namespace winrt::DirectMLGraph::implementation
                     {
                         if (whati.size() != 2)
                             continue;
+                        
+                        dml::Expression expr;
+
                         if (it->what == TYPE_ADD)
-                            mop.AddIntermediate(dml::Add(mop.Item(whati[0]), mop.Item(whati[1])));
+                            expr = (dml::Add(mop.Item(whati[0]), mop.Item(whati[1])));
                         if (it->what == TYPE_ATANYX)
-                            mop.AddIntermediate(dml::ATanYX(mop.Item(whati[0]), mop.Item(whati[1])));
+                            expr = (dml::ATanYX(mop.Item(whati[0]), mop.Item(whati[1])));
 
                         if (it->what == TYPE_BITAND)
-                            mop.AddIntermediate(dml::BitAnd(mop.Item(whati[0]), mop.Item(whati[1])));
+                            expr = (dml::BitAnd(mop.Item(whati[0]), mop.Item(whati[1])));
+                        if (it->what == TYPE_BITOR)
+                            expr = (dml::BitOr(mop.Item(whati[0]), mop.Item(whati[1])));
+                        if (it->what == TYPE_BITSL)
+                            expr = (dml::BitShiftLeft(mop.Item(whati[0]), mop.Item(whati[1])));
+                        if (it->what == TYPE_BITSR)
+                            expr = (dml::BitShiftRight(mop.Item(whati[0]), mop.Item(whati[1])));
+                        if (it->what == TYPE_BITXOR)
+                            expr = (dml::BitXor(mop.Item(whati[0]), mop.Item(whati[1])));
+
+                        if (it->csv_output.length())
+                            mop.AddItem(expr, 0, true,BINDING_MODE::BIND_OUT);
+                        else
+                            mop.AddIntermediate(expr);
 
                         node->tidx = tidx++;
                         continue;
