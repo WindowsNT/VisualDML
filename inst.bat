@@ -1,7 +1,6 @@
 @echo off
 cls
 
-copy f:\tools\directmllib\dmllib.* /y
 
 REM Manifest Touch
 f:\tools\pack\pack64.exe /m %CD%\Package.appxmanifest /n CN=EDD191C1-439D-4D37-B608-DD521142451D
