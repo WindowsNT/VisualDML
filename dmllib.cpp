@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "dmllib.hpp"
 
 
 DML_BINDING_DESC MLBUFFER::BindingDesc()
@@ -555,10 +556,6 @@ MLOP::MLOP(ML* _ml)
 }
 
 
-size_t MLOP::Count()
-{
-	return items.size();
-}
 
 MLOP_ITEM& MLOP::Item(size_t i)
 {

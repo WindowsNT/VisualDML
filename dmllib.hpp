@@ -81,7 +81,6 @@ struct MLOP_ITEM
 	unsigned int InputTensorTag = 0; // 1 based
 	BINDING_MODE BindingMode = BINDING_MODE::NONE; 
 	
-	std::any any_data;
 	std::optional<MLBUFFER> buffer;
 	dml::Expression expr;
 	std::optional<MLRESOURCE> bds;
@@ -151,9 +150,8 @@ public:
 
 
 
-	std::any any_data;
+
 	MLOP(ML* ml);
-	size_t Count();
 	MLOP_ITEM& Item(size_t i);
 	MLOP_ITEM& WithTag(LPARAM tag);
 	MLOP_ITEM* WithTag2(LPARAM tag);
@@ -198,7 +196,6 @@ public:
 	void Run(size_t which = (size_t)-1);
 
 	std::vector<MLOP> ops;
-	std::any any_data;
 
 };
 
