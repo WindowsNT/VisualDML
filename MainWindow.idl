@@ -1,0 +1,11 @@
+namespace DirectMLGraph
+{
+    [default_interface]
+    runtimeclass MainWindow : Microsoft.UI.Xaml.Window
+    {
+        MainWindow();
+        void Resize();
+        Int64 wnd;
+
+    }
+}

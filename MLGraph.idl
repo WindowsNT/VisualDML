@@ -1,0 +1,14 @@
+namespace DirectMLGraph
+{
+    [default_interface]
+    runtimeclass MLGraph : Microsoft.UI.Xaml.Controls.Page, Microsoft.UI.Xaml.Data.INotifyPropertyChanged
+    {
+        MLGraph();
+        Int64 wnd;
+        void Key(Int64 k);
+        void Refresh();
+        void Resize();
+        String i0;
+        String i1;
+    }
+}
