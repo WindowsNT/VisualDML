@@ -1,4 +1,5 @@
 #define DISABLE_XAML_GENERATED_MAIN
+#define DML_TARGET_VERSION_USE_LATEST
 #pragma once
 #include <windows.h>
 #include <unknwn.h>

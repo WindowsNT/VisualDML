@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <e>
 	<Operator DataType="1" Zoom="1.000000">
-		<Node Name="Input" xx="88.702393" yy="217.599609" CSV="" CSVI="floats.csv" bf="0" sm="45" Type="1">
+		<Node Name="Input" xx="46.702393" yy="180.968750" CSV="" CSVI="floats.csv" bf="0" sm="45" optype="1" Type="1">
 			<Children>
 				<Child idx="0" io="1" u="2,7"/>
 			</Children>
@@ -10,7 +10,7 @@
 				<Dimension Size="10"/>
 			</Dimensions>
 		</Node>
-		<Node xx="317.442383" yy="35.599609" CSV="" CSVI="" bf="0" sm="0" ni="0" Type="20" Name="Constant">
+		<Node xx="312.442383" yy="46.968750" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="0" Type="21" Name="Constant">
 			<Children>
 				<Child idx="0" io="1" u="34"/>
 			</Children>
@@ -22,21 +22,21 @@
 				<Dimension Size="10"/>
 			</Dimensions>
 		</Node>
-		<Node xx="688.000000" yy="70.599609" CSV="" CSVI="" bf="0" sm="0" ni="2" Type="5" Name="Add">
+		<Node xx="555.000000" yy="126.107422" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="2" Type="5" Name="Add">
 			<Children>
 				<Child idx="0" io="0" u="34"/>
 				<Child idx="0" io="0" u="7"/>
 				<Child idx="0" io="1" u="14,17"/>
 			</Children>
 		</Node>
-		<Node xx="1414.148438" yy="131.353516" CSV="o1.csv" CSVI="" bf="0" sm="0" Name="Output" Type="999999">
+		<Node xx="775.148438" yy="40.353516" CSV="o1.csv" CSVI="" bf="0" sm="0" optype="1" Name="Output" Type="999999">
 			<Children>
 				<Child idx="0" io="0" u="17"/>
 			</Children>
 		</Node>
 	</Operator>
 	<Operator DataType="1" Zoom="1.000000">
-		<Node Name="Input" xx="440.774658" yy="422.845703" CSV="" CSVI="" bf="0" sm="-45" Type="1">
+		<Node Name="Input" xx="555.774658" yy="318.353516" CSV="" CSVI="" bf="0" sm="-45" optype="1" Type="1">
 			<Children>
 				<Child idx="0" io="1" u="30,93,98"/>
 			</Children>
@@ -45,13 +45,13 @@
 				<Dimension Size="10"/>
 			</Dimensions>
 		</Node>
-		<Node xx="645.000000" yy="377.599609" CSV="" CSVI="" bf="0" sm="0" ni="1" Type="28" Name="Identity">
+		<Node xx="752.000000" yy="324.107422" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="1" Type="33" Name="Identity">
 			<Children>
 				<Child idx="0" io="0" u="30"/>
 				<Child idx="0" io="1" u="135"/>
 			</Children>
 		</Node>
-		<Node xx="826.648438" yy="234.599609" CSV="" CSVI="" bf="0" sm="0" ni="1" Type="39" Name="Pow">
+		<Node xx="921.648438" yy="304.599609" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="1" Type="45" Name="Pow">
 			<Children>
 				<Child idx="0" io="0" u="135"/>
 				<Child idx="0" io="1" u="136"/>
@@ -60,14 +60,14 @@
 				<Param Name="Exponent" Value="2.000000" Min="0.000000" Max="340282346638528859811704183484516925440.000000"/>
 			</Params>
 		</Node>
-		<Node xx="1140.148438" yy="269.353516" CSV="o2.csv" CSVI="" bf="0" sm="0" Name="Output" Type="999999">
+		<Node xx="1171.148438" yy="305.353516" CSV="o2.csv" CSVI="" bf="0" sm="0" optype="1" Name="Output" Type="999999">
 			<Children>
 				<Child idx="0" io="0" u="136"/>
 			</Children>
 		</Node>
 	</Operator>
 	<Operator DataType="1" Zoom="1.000000">
-		<Node Name="Input" xx="56.000000" yy="719.968750" CSV="" CSVI="" bf="0" sm="-45" Type="1">
+		<Node Name="Input" xx="40.136719" yy="729.845703" CSV="" CSVI="" bf="0" sm="-45" optype="1" Type="1">
 			<Children>
 				<Child idx="0" io="1" u="128"/>
 			</Children>
@@ -78,7 +78,7 @@
 				<Dimension Size="10"/>
 			</Dimensions>
 		</Node>
-		<Node Name="Input" xx="241.136719" yy="506.845703" CSV="" CSVI="" bf="0" sm="-45" Type="1">
+		<Node Name="Input" xx="271.136719" yy="607.353516" CSV="" CSVI="" bf="0" sm="-45" optype="1" Type="1">
 			<Children>
 				<Child idx="0" io="1" u="127"/>
 			</Children>
@@ -89,7 +89,7 @@
 				<Dimension Size="2"/>
 			</Dimensions>
 		</Node>
-		<Node xx="932.353760" yy="609.337891" CSV="" CSVI="" bf="0" sm="0" ni="3" Type="27" Name="Gemm">
+		<Node xx="556.353760" yy="629.337891" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="3" Type="32" Name="Gemm">
 			<Children>
 				<Child idx="0" io="0" u="127"/>
 				<Child idx="0" io="0" u="128"/>
@@ -103,7 +103,7 @@
 				<Param Name="Beta" Value="0.000000" Min="0.000000" Max="340282346638528859811704183484516925440.000000"/>
 			</Params>
 		</Node>
-		<Node xx="1403.000000" yy="619.337891" CSV="o3.bin" CSVI="" bf="0" sm="0" Name="Output" Type="999999">
+		<Node xx="853.922852" yy="672.353516" CSV="o3.bin" CSVI="" bf="0" sm="0" optype="1" Name="Output" Type="999999">
 			<Children>
 				<Child idx="0" io="0" u="104"/>
 			</Children>

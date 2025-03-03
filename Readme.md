@@ -22,17 +22,17 @@ A: Abs,ACos,ACosh,Add,And,ASin,ASinh,ATan,ATanh,ATanYX
 
 B: BitAnd, BitCount, BitOr, BitNot, BitShiftLeft, BitShiftRight, BitXor
 
-C: Ceil, Clip, Constant, Cos, Cosh, Cummulative Sum/Product, Convolution
+C: Cast, Ceil, Clip, Constant, Cos, Cosh, Cummulative Sum/Product, Convolution
 
 D: Divide
 
-E: Erf, Exp
+E: Erf, Exp, Equals
 
 F: Floor
 
 G: Gemm
 
-I: Identity
+I: Identity, If
 
 L: Log
 
@@ -53,7 +53,10 @@ T: Threshold
 X: Xor
 ### Pending
 
-All other operators, casts
+All other operators
 
+Activiation, Batch, 
+GreaterThan, GreaterThanOrEqual  IsInfinity, IsNan, LessThan, LessThanOrEqual,
+Join Modulus quantizer  Recip,Reduce,Resample,  Slice Span Split, Tile Topk, 
 
 ![screenshot](graph1.jpg)

@@ -2,6 +2,10 @@
 
 #include "MLGraph.g.h"
 
+
+inline int MAX_OP_TYPES = 13;
+inline std::wstring optypes[] = { L"",L"Float32",L"Float16",L"UInt32",L"UInt16",L"UInt8",L"Int32",L"Int16",L"Int8",L"Float64",L"UInt64",L"Int64",L"UInt4",L"Int4" };
+
 struct XLNODE;
 inline static unsigned long long nnn = 1;
 inline unsigned long long nextn()
@@ -34,6 +38,8 @@ struct XLNODE
     D2F bhit = { };
     D2F bhit2 = { };
 
+    int OpType = DML_TENSOR_DATA_TYPE_FLOAT32;
+
 
     signed long long ShareMemory = 0;
     bool bSelected = 0;
@@ -45,6 +51,7 @@ struct XLNODE
     std::vector<XLNODEBULLET> children;
 
     virtual bool IsInput() { return false; }
+    virtual bool AsksType() { return false; }
     virtual bool IsOutput() { return false; }
     virtual void Ser(XML3::XMLElement& e);
     virtual void Unser(XML3::XMLElement& e);
@@ -65,12 +72,12 @@ enum XLNODE_TYPE
     TYPE_ABS,TYPE_ACOS,TYPE_ACOSH, TYPE_ADD,TYPE_ASIN,TYPE_ASINH,TYPE_ATAN,TYPE_ATANH, TYPE_ATANYX,
 
     TYPE_BITAND,TYPE_BITCOUNT,TYPE_BITNOT,TYPE_BITOR,TYPE_BITSL,TYPE_BITSR,TYPE_BITXOR,
-	TYPE_CEIL, TYPE_CLIP, TYPE_CONSTANT, TYPE_COS, TYPE_COSH, TYPE_CONVOLUTION,TYPE_CUMSUM, TYPE_CUMPROD,
+	TYPE_CAST,TYPE_CEIL, TYPE_CLIP, TYPE_CONSTANT, TYPE_COS, TYPE_COSH, TYPE_CONVOLUTION,TYPE_CUMSUM, TYPE_CUMPROD,
     TYPE_DIVIDE,
-    TYPE_ERF,TYPE_EXP,
+    TYPE_ERF,TYPE_EXP,TYPE_EQUALS,
     TYPE_FLOOR,
     TYPE_GEMM,
-    TYPE_IDENTITY,
+    TYPE_IDENTITY,TYPE_IF,
 	TYPE_LAND, TYPE_LOR, TYPE_LXOR,TYPE_LNOT,TYPE_LOG,
     TYPE_MAX,TYPE_MEAN,TYPE_MIN,TYPE_MULTIPLY,
     TYPE_NEGATE,
@@ -99,6 +106,7 @@ inline std::map<int, std::string> TypesToNames = {
 	{TYPE_BITSL,"BitSL"},
 	{TYPE_BITSR,"BitSR"},
 	{TYPE_BITXOR,"BitXor"},
+	{TYPE_CAST,"Cast"},
 	{TYPE_CEIL,"Ceil"},
 	{TYPE_CLIP,"Clip"},
 	{TYPE_CONSTANT,"Constant"},
@@ -110,9 +118,11 @@ inline std::map<int, std::string> TypesToNames = {
 	{TYPE_DIVIDE,"Divide"},
 	{TYPE_ERF,"Erf"},
 	{TYPE_EXP,"Exp"},
+	{TYPE_EQUALS,"Equals"},
 	{TYPE_FLOOR,"Floor"},
 	{TYPE_GEMM,"Gemm"},
 	{TYPE_IDENTITY,"Identity"},
+	{TYPE_IF,"If"},
 	{TYPE_LAND,"And"},
 	{TYPE_LOR,"Or"},
 	{TYPE_LXOR,"Xor"},
@@ -138,6 +148,13 @@ struct XLNODE_ANY : public XLNODE
 {
     int what = 0;
     int howi = 0;
+
+    virtual bool AsksType() {
+        if (what == TYPE_CAST)
+            return true;
+        return false;
+    }
+
 
 
     virtual int ninreq() 
@@ -205,6 +222,8 @@ struct XLNODE_ANY : public XLNODE
 		if (what == TYPE_BITXOR)
 			return L"BitXor";
 
+		if (what == TYPE_CAST)
+			return L"Cast";
         if (what == TYPE_CEIL)
             return L"Ceil";
         if (what == TYPE_CLIP)
@@ -229,6 +248,8 @@ struct XLNODE_ANY : public XLNODE
 			return L"Erf";
 		if (what == TYPE_EXP)
 			return L"Exp";
+		if (what == TYPE_EQUALS)
+			return L"Equals";
 
 		if (what == TYPE_FLOOR)
 			return L"Floor";
@@ -238,6 +259,8 @@ struct XLNODE_ANY : public XLNODE
 
 		if (what == TYPE_IDENTITY)
 			return L"Identity";
+		if (what == TYPE_IF)
+			return L"If";
 
         if (what == TYPE_LAND)
             return L"And";
@@ -310,6 +333,11 @@ struct XLNODE_ANY : public XLNODE
     virtual std::wstring name()
     {
         auto n = opname();
+        if (AsksType())
+        {
+            n += L"\r\n";
+            n += optypes[OpType];
+        }
         return n;
     }
 
@@ -360,6 +388,7 @@ struct XLNODE_CONSTANT : public XLNODE_ANY
     std::vector<unsigned int> tensor_dims;
 
     virtual bool IsInput() { return true; }
+    virtual bool AsksType() { return true; }
 
     virtual void Ser(XML3::XMLElement& ee)
     {
@@ -434,6 +463,7 @@ struct XLNODE_INPUT : public XLNODE
     std::vector<unsigned int> tensor_dims;
 
     virtual bool IsInput() { return true; }
+    virtual bool AsksType() { return true; }
 
 
     XLNODE_INPUT()
@@ -463,6 +493,8 @@ struct XLNODE_INPUT : public XLNODE
     virtual std::wstring name()
     {
         std::wstring dr = L"Input";
+        dr += L"\r\n";
+        dr += optypes[OpType];
 		return dr;
     }
 

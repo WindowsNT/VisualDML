@@ -28,6 +28,7 @@ void XLNODE::Ser(XML3::XMLElement& e)
     e.vv("CSVI").SetWideValue(csv_input.c_str());
 	e.vv("bf").SetValueInt(BufferVisible);
 	e.vv("sm").SetValueLongLong(ShareMemory);  
+	e.vv("optype").SetValueInt(OpType); 
 
     auto& ch = e["Children"];
     for (auto& c : children)
@@ -59,6 +60,7 @@ void XLNODE::Unser(XML3::XMLElement& e)
     hit.top = e.vv("yy").GetValueFloat();
 	BufferVisible = e.vv("bf").GetValueInt();
 	ShareMemory = e.vv("sm").GetValueLongLong();
+	OpType = e.vv("optype").GetValueInt(DML_TENSOR_DATA_TYPE_FLOAT32);
 
     children.clear();
     auto& ch = e["Children"];
@@ -115,6 +117,7 @@ void XLNODE::Draw(MLOP* mlop,bool Active,ID2D1DeviceContext5* r, D2D* d2d, size_
                     else
                         swprintf_s(ftr + wcslen(ftr), 10, L"%i", buf.sizes[i]);
                 }
+                swprintf_s(ftr + wcslen(ftr), 10, L" %s", optypes[buf.dataType].c_str());
             }
             catch (...)
             {
@@ -331,6 +334,23 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildNodeRightMenu(std::shared_
         r1.Items().Append(s);
     }
 
+    if (nd->AsksType())
+    {
+        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubItem A;
+        A.Text(L"Type");
+        for(int i = 1 ; i <= MAX_OP_TYPES ; i++)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::ToggleMenuFlyoutItem O; O.Text(optypes[i]); O.Click(fooo);
+			if (nd->OpType == i)
+				O.IsChecked(true);
+            A.Items().Append(O);
+        }
+        r1.Items().Append(A);
+        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSeparator s;
+        r1.Items().Append(s);
+
+    }
+
     if (1)
     {
         for (size_t i = 0; i < nd->Params.size(); i++)
@@ -502,6 +522,11 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
 
         if (1)
         {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem N; N.Text(L"Cast"); N.Click(fooo);
+            A.Items().Append(N);
+        }
+        if (1)
+        {
             winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem N; N.Text(L"Ceil"); N.Click(fooo);
             A.Items().Append(N);
         }
@@ -573,6 +598,12 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
             winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Exp"); Neg.Click(fooo);
             A.Items().Append(Neg);
         }
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem N; N.Text(L"Equals"); N.Click(fooo);
+            A.Items().Append(N);
+        }
+
         r1.Items().Append(A);
     }
 
@@ -606,8 +637,17 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
         winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubItem A;
         A.Text(L"I");
 
-        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Identity"); Neg.Click(fooo);
-        A.Items().Append(Neg);
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Identity"); Neg.Click(fooo);
+            A.Items().Append(Neg);
+        }
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem N; N.Text(L"If"); N.Click(fooo);
+            A.Items().Append(N);
+        }
+
 
         r1.Items().Append(A);
     }
@@ -1154,6 +1194,18 @@ namespace winrt::DirectMLGraph::implementation
                                                 }
                                             }
                                         }
+
+                                        for (size_t ig = 1; ig <= MAX_OP_TYPES; ig++)
+                                        {
+											if (t == optypes[ig])
+											{
+												Push();
+												nod->OpType = (int)ig;
+												FullRefresh();
+												return;
+											}
+                                        }
+
                                         if (t == L"Clear input")
                                         {
                                             Push();
@@ -1387,6 +1439,13 @@ namespace winrt::DirectMLGraph::implementation
                                     op.nodes.push_back(node);
                                 }
 
+                                if (t == L"Cast")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_CAST);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
                                 if (t == L"Ceil")
                                 {
                                     auto node = std::make_shared<XLNODE_ANY>(1, TYPE_CEIL);
@@ -1500,6 +1559,14 @@ namespace winrt::DirectMLGraph::implementation
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
+                                if (t == L"Equals")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(2, TYPE_EQUALS);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+
                                 if (t == L"Floor")
                                 {
                                     auto node = std::make_shared<XLNODE_ANY>(1, TYPE_FLOOR);
@@ -1534,6 +1601,14 @@ namespace winrt::DirectMLGraph::implementation
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
+                                if (t == L"If")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(3, TYPE_IF);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+
                                 if (t == L"Log")
                                 {
                                     auto node = std::make_shared<XLNODE_ANY>(1, TYPE_LOG);
@@ -2475,16 +2550,36 @@ namespace winrt::DirectMLGraph::implementation
                         auto it = std::dynamic_pointer_cast<XLNODE_INPUT>(node);
                         if (it)
                         {
-                            mop.AddInput({ DML_TENSOR_DATA_TYPE_FLOAT32, it->tensor_dims }, 0, mlr ? false : true, BINDING_MODE::BIND_IN, mlr);
+                            mop.AddInput({ (DML_TENSOR_DATA_TYPE)it->OpType, it->tensor_dims }, 0, mlr ? false : true, BINDING_MODE::BIND_IN, mlr);
                         }
                         else
                         {
                             auto it2 = std::dynamic_pointer_cast<XLNODE_CONSTANT>(node);
                             if (it2)
                             {
-                                auto expr = ml.ConstantValueTensor(*mop.GetGraph(), it2->Params[0].v, it2->tensor_dims);
+                                DML_SCALAR_UNION scalar2 = {};
+
+								if (it2->OpType == DML_TENSOR_DATA_TYPE_FLOAT32)	scalar2.Float32 = it2->Params[0].v;
+                                if (it2->OpType == DML_TENSOR_DATA_TYPE_FLOAT16)	scalar2.Float32 = it2->Params[0].v;
+                                if (it2->OpType == DML_TENSOR_DATA_TYPE_UINT32)	scalar2.UInt32 = (unsigned int)it2->Params[0].v;
+                                if (it2->OpType == DML_TENSOR_DATA_TYPE_UINT16)	scalar2.UInt16 = (unsigned short)it2->Params[0].v;
+                                if (it2->OpType == DML_TENSOR_DATA_TYPE_UINT8)	scalar2.UInt8 = (unsigned char)it2->Params[0].v;
+                                if (it2->OpType == DML_TENSOR_DATA_TYPE_INT32)	scalar2.Int32 = (int)it2->Params[0].v;
+                                if (it2->OpType == DML_TENSOR_DATA_TYPE_INT16)	scalar2.Int16 = (short)it2->Params[0].v;
+                                if (it2->OpType == DML_TENSOR_DATA_TYPE_INT8)	scalar2.Int8 = (char)it2->Params[0].v;
+                                if (it2->OpType == DML_TENSOR_DATA_TYPE_FLOAT64)	scalar2.Float64 = (double)it2->Params[0].v;
+                                if (it2->OpType == DML_TENSOR_DATA_TYPE_UINT64)	scalar2.UInt64 = (unsigned long long)it2->Params[0].v;
+                                if (it2->OpType == DML_TENSOR_DATA_TYPE_INT64)	scalar2.Int64 = (long long)it2->Params[0].v;
+                                if (it2->OpType == DML_TENSOR_DATA_TYPE_UINT4)	scalar2.UInt32 = (unsigned int)it2->Params[0].v;
+                                if (it2->OpType == DML_TENSOR_DATA_TYPE_INT4)	scalar2.Int32 = (int)it2->Params[0].v;
+
+
+                                auto expr = dml::FillValueConstant(
+                                    *mop.GetGraph(), it2->tensor_dims,
+                                    (DML_TENSOR_DATA_TYPE)it2->OpType,       // Data type
+                                    scalar2
+                                );
                                 mop.AddItem(expr, 0, false, BINDING_MODE::NONE);
-//                                mop.AddInput({ DML_TENSOR_DATA_TYPE_FLOAT32, it2->tensor_dims }, 0, mlr ? false : true, BINDING_MODE::BIND_IN, mlr);
                             }
                         }
                         node->tidx = tidx++;
@@ -2582,6 +2677,8 @@ namespace winrt::DirectMLGraph::implementation
                             expr = (dml::BitXor(mop.Item(whati[0]), mop.Item(whati[1])));
 
 
+                        if (it->what == TYPE_CAST)
+                            expr = (dml::Cast(mop.Item(whati[0]),(DML_TENSOR_DATA_TYPE)it->OpType));
                         if (it->what == TYPE_CEIL)
                             expr = (dml::Ceil(mop.Item(whati[0])));
                         if (it->what == TYPE_CLIP)
@@ -2595,12 +2692,14 @@ namespace winrt::DirectMLGraph::implementation
                                 e3 = mop.Item(whati[2]);
                             expr = (dml::Convolution(mop.Item(whati[0]), mop.Item(whati[1]), e3, (DML_CONVOLUTION_MODE)(int)it->Params[0].v));
                         }
-                        if (it->what == TYPE_CONSTANT)
+                        
+                        // It's taken as input
+/*                        if (it->what == TYPE_CONSTANT)
                         {
 							auto it2 = std::dynamic_pointer_cast<XLNODE_CONSTANT>(node);
 							expr = ml.ConstantValueTensor(*mop.GetGraph(), it2->Params[0].v, it2->tensor_dims);
                         }
-
+*/
                         if (it->what == TYPE_COS)
                             expr = (dml::Cos(mop.Item(whati[0])));
                         if (it->what == TYPE_COSH)
@@ -2620,6 +2719,9 @@ namespace winrt::DirectMLGraph::implementation
                             expr = (dml::Erf(mop.Item(whati[0])));
                         if (it->what == TYPE_EXP)
                             expr = (dml::Exp(mop.Item(whati[0])));
+                        if (it->what == TYPE_EQUALS)
+                            expr = (dml::Equals(mop.Item(whati[0]), mop.Item(whati[1])));
+
 
                         if (it->what == TYPE_FLOOR)
                             expr = (dml::Floor(mop.Item(whati[0])));
@@ -2638,6 +2740,8 @@ namespace winrt::DirectMLGraph::implementation
 
                         if (it->what == TYPE_IDENTITY)
                             expr = (dml::Identity(mop.Item(whati[0])));
+                        if (it->what == TYPE_IF)
+                            expr = (dml::If(mop.Item(whati[0]), mop.Item(whati[1]), mop.Item(whati[2])));
 
                         if (it->what == TYPE_LAND)
                             expr = (dml::LogicalAnd(mop.Item(whati[0]), mop.Item(whati[1])));
