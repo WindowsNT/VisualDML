@@ -57,19 +57,6 @@ void Locate([[maybe_unused]] const wchar_t* fi)
 
 }
 
-bool PutFile(const wchar_t* f, std::vector<char>& d, bool Fw = true)
-{
-    HANDLE hX = CreateFile(f, GENERIC_WRITE, 0, 0, Fw ? CREATE_ALWAYS : CREATE_NEW, 0, 0);
-    if (hX == INVALID_HANDLE_VALUE)
-        return false;
-    DWORD A = 0;
-    WriteFile(hX, d.data(), (DWORD)(d.size() * sizeof(char)), &A, 0);
-    CloseHandle(hX);
-    if (A != d.size())
-        return false;
-    return true;
-}
-
 
 bool LoadFile(const wchar_t* f, std::vector<unsigned char>& d)
 {
@@ -87,4 +74,42 @@ bool LoadFile(const wchar_t* f, std::vector<unsigned char>& d)
     return true;
 }
 
+std::wstring TempFile3()
+{
+    std::vector<wchar_t> td(1000);
+    GetTempPathW(1000, td.data());
 
+    wcscat_s(td.data(), 1000, L"\\");
+    std::vector<wchar_t> x(1000);
+    GetTempFileNameW(td.data(), L"tmp", 0, x.data());
+    DeleteFile(x.data());
+
+    return x.data();
+}
+
+
+
+void CsvToBinary(const wchar_t* csv, const wchar_t* binout)
+{
+	std::ifstream f(csv);
+    std::string line;
+	auto hF = CreateFile(binout, GENERIC_WRITE, 0, 0, CREATE_ALWAYS, 0, 0); 
+	if (hF == INVALID_HANDLE_VALUE)
+		return;
+    while (std::getline(f, line))
+    {
+        std::vector<float> v;
+        std::vector<std::string> split(const std::string & s, char delim);
+        std::vector<std::string> sp = split(line, ',');
+        for (auto& s : sp)
+        {
+            if (isalpha(s[0]))
+                continue;
+            v.push_back(std::stof(s));
+        }
+		DWORD A = 0;
+		WriteFile(hF, v.data(), (DWORD)(v.size() * sizeof(float)), &A, 0);
+
+    }
+	CloseHandle(hF);
+}

@@ -147,3 +147,113 @@ struct D2F : public D2D1_RECT_F
 #include "xml3all.h"
 #include "d2d.hpp"
 #include "dmllib.hpp"
+
+
+class FMAP
+{
+private:
+
+	HANDLE hX = INVALID_HANDLE_VALUE;
+	HANDLE hY = INVALID_HANDLE_VALUE;
+	unsigned long long sz = 0;
+	char* d = 0;
+	std::wstring mappedfile;
+
+public:
+
+	std::wstring fil(bool WithFolder) const
+	{
+		if (WithFolder)
+			return mappedfile;
+		std::vector<wchar_t> t(1000);
+		wcscpy_s(t.data(), 1000, mappedfile.c_str());
+		PathStripPath(t.data());
+		return t.data();
+	}
+	void Stop(unsigned long long p)
+	{
+		LARGE_INTEGER li = { 0 };
+		GetFileSizeEx(hX, &li);
+		if (p > (unsigned long long)li.QuadPart)
+			p = li.QuadPart;
+		sz = p;
+
+	}
+
+	HANDLE& hF() { return hX; }
+	unsigned long long size() { return sz; }
+	char* p() { return d; }
+
+	bool CreateForRecord(const wchar_t* f)
+	{
+		mappedfile = f;
+		hX = CreateFile(f, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, 0, CREATE_ALWAYS, 0, 0);
+		if (hX == INVALID_HANDLE_VALUE || hX == 0)
+		{
+			hX = 0;
+			return false;
+		}
+		return true;
+	}
+
+	bool Map(const wchar_t* f)
+	{
+		hX = CreateFile(f, GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
+		if (hX == INVALID_HANDLE_VALUE || hX == 0)
+		{
+			hX = 0;
+			return false;
+		}
+		LARGE_INTEGER li = { 0 };
+		GetFileSizeEx(hX, &li);
+		sz = li.QuadPart;
+		hY = CreateFileMapping(hX, 0, PAGE_READONLY, 0, 0, 0);
+		if (hY == 0)
+			return false;
+		d = (char*)MapViewOfFile(hY, FILE_MAP_READ, 0, 0, 0);
+		mappedfile = f;
+		return true;
+	}
+
+	void Unmap()
+	{
+		if (d)
+			UnmapViewOfFile(d);
+		d = 0;
+		if (hY != 0)
+			CloseHandle(hY);
+		hY = 0;
+		if (hX != 0)
+			CloseHandle(hX);
+		hX = 0;
+		hY = 0;
+	}
+
+
+	FMAP(const wchar_t* f = 0)
+	{
+		if (f)
+			Map(f);
+	}
+	~FMAP()
+	{
+		Unmap();
+	}
+
+};
+
+
+template <typename T>
+bool PutFile(const wchar_t* f, std::vector<T>& d, bool Fw = true)
+{
+	HANDLE hX = CreateFile(f, GENERIC_WRITE, 0, 0, Fw ? CREATE_ALWAYS : CREATE_NEW, 0, 0);
+	if (hX == INVALID_HANDLE_VALUE)
+		return false;
+	DWORD A = 0;
+	WriteFile(hX, d.data(), (DWORD)(d.size() * sizeof(T)), &A, 0);
+	CloseHandle(hX);
+	if (A != d.size())
+		return false;
+	return true;
+}
+

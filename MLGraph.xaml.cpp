@@ -2321,7 +2321,6 @@ namespace winrt::DirectMLGraph::implementation
     {
         try
         {
-
             void Locate(const wchar_t* fi);
 
             // Initialize
@@ -2336,10 +2335,13 @@ namespace winrt::DirectMLGraph::implementation
             if (ml.descriptorHeap == 0)
                 ml.Prepare();
 
+            bool WillBeLast = 0;
+
+
+            // File mapping
             for (size_t iop = 0; iop < xl.ops.size(); iop++)
             {
                 auto& op = xl.ops[iop];
-                auto& mlop = ml.ops[iop];
                 for (auto& node : op.nodes)
                 {
                     if (auto it = std::dynamic_pointer_cast<XLNODE_INPUT>(node))
@@ -2348,9 +2350,8 @@ namespace winrt::DirectMLGraph::implementation
                             continue;
                         if (it->csv_input.length())
                         {
-                            std::ifstream f(it->csv_input);
-                            auto orgf = it->csv_input;
-                            if (!f.is_open())
+                            auto inf = it->csv_input;
+                            if (GetFileAttributes(inf.c_str()) == 0xFFFFFFFF)
                             {
                                 std::vector<wchar_t> mf(1000);
                                 wcscpy_s(mf.data(), 1000, current_file.c_str());
@@ -2359,102 +2360,132 @@ namespace winrt::DirectMLGraph::implementation
                                 mfs = mfs.substr(0, p);
                                 mfs += L"\\";
                                 mfs += it->csv_input;
-                                f = std::ifstream(mfs);
-                                orgf = mfs;
+								inf = mfs;
                             }
-                            if (f.is_open())
+
+                            // Actually csv?
+                            auto ch = wcsrchr(inf.c_str(), L'.');
+                            if (ch && _wcsicmp(ch, L".csv") == 0)
                             {
-                                // Is it actually csv ?
-                                auto ch = wcsrchr(orgf.c_str(), L'.');
+                                std::wstring TempFile3();
+                                auto tf = TempFile3();
+                                void CsvToBinary(const wchar_t* csv, const wchar_t* binout);
+                                CsvToBinary(inf.c_str(), tf.c_str());
+                                it->mapin.Map(tf.c_str());
+                            }
+                            else
+                            {
+                                it->mapin.Map(inf.c_str());
+                            }
+                        }
+                    }
+                    if (node->csv_output.length())
+                    {
+                        auto of = node->csv_output;
+                        auto pathhas = wcsrchr(of.c_str(), L'\\');
+                        if (!pathhas)
+                        {
+                            std::vector<wchar_t> pa(1000);
+                            wcscpy_s(pa.data(), 1000, current_file.c_str());
+                            std::wstring mfs = pa.data();
+                            auto p = mfs.find_last_of(L"\\");
+                            mfs = mfs.substr(0, p);
+                            mfs += L"\\";
+                            mfs += of;
+                            of = mfs;
+                        }
+                        DeleteFile(of.c_str());
+//						node->mapout.CreateForRecord(of.c_str()); 
+                    }
+                }
+            }
+
+            for (int iRun = 0; ; iRun++)
+            {
+                if (WillBeLast == 1)
+                    break;
+				WillBeLast = 1;
+                for (size_t iop = 0; iop < xl.ops.size(); iop++)
+                {
+                    auto& op = xl.ops[iop];
+                    auto& mlop = ml.ops[iop];
+                    for (auto& node : op.nodes)
+                    {
+                        if (auto it = std::dynamic_pointer_cast<XLNODE_INPUT>(node))
+                        {
+                            if (it->ShareMemory < 0 || it->mapin.p() == 0)
+                                continue;
+
+                            auto& wh = mlop.Item(it->tidx);
+                            if (!wh.buffer)
+                                continue;
+
+                            long long bs = (long long)wh.buffer->b.sz();
+                            long long szfu = (long long)(it->mapin.size()) - (long long)(iRun * bs);
+                            if (szfu <= 0)
+                                continue;
+                            if (szfu <= bs)
+                                wh.buffer->Upload(&ml, it->mapin.p() + (iRun * bs), szfu);
+                            else
+                            {
+                                wh.buffer->Upload(&ml, it->mapin.p() + (iRun * bs), bs);
+                                WillBeLast = 0;
+                            }
+                        }
+                    }
+
+
+                    ml.Run(iop);
+
+                    for (auto& node : op.nodes)
+                    {
+                        if (WillBeLast == 0)
+                            break;
+                        if (auto it = std::dynamic_pointer_cast<XLNODE>(node))
+                        {
+                            if (it->csv_output.length())
+                            {
+                                auto of = it->csv_output;
+                                auto pathhas = wcsrchr(of.c_str(), L'\\');
+                                if (!pathhas)
+                                {
+                                    std::vector<wchar_t> pa(1000);
+                                    wcscpy_s(pa.data(), 1000, current_file.c_str());
+                                    std::wstring mfs = pa.data();
+                                    auto p = mfs.find_last_of(L"\\");
+                                    mfs = mfs.substr(0, p);
+                                    mfs += L"\\";
+                                    mfs += of;
+                                    of = mfs;
+                                }
+                                DeleteFile(of.c_str());
+                                auto& wh = mlop.Item(node->tidx);
+                                if (!wh.buffer)
+                                    continue;
+                                std::vector<char> v;
+                                wh.buffer->Download(&ml, (size_t)-1, v);
+
+                                auto ch = wcsrchr(of.c_str(), L'.');
                                 if (ch && wcscmp(ch, L".csv") == 0)
                                 {
-                                    std::vector<float> v;
-                                    std::string line;
-                                    while (std::getline(f, line))
+                                    std::vector<float> fv(v.size() / 4);
+                                    memcpy(fv.data(), v.data(), v.size());
+                                    std::ofstream f(of);
+                                    if (f.is_open())
                                     {
-                                        std::vector<std::string> split(const std::string & s, char delim);
-                                        std::vector<std::string> sp = split(line, ',');
-                                        for (auto& s : sp)
+                                        for (size_t i = 0; i < fv.size(); i++)
                                         {
-                                            if (isalpha(s[0]))
-                                                continue;
-                                            v.push_back(std::stof(s));
+                                            f << fv[i] << std::endl;
                                         }
                                     }
-
-                                    auto& wh = mlop.Item(it->tidx);
-                                    if (!wh.buffer)
-                                        continue;
-                                    wh.buffer->Upload(&ml, v.data(), v.size() * sizeof(float));
                                 }
                                 else
                                 {
                                     // Binary
-                                    bool LoadFile(const wchar_t* f, std::vector<unsigned char>&d);
-                                    std::vector<unsigned char> v;
-                                    LoadFile(orgf.c_str(), v);
-                                    auto& wh = mlop.Item(it->tidx);
-                                    if (!wh.buffer)
-                                        continue;
-                                    wh.buffer->Upload(&ml, v.data(), v.size());
+                                    PutFile(of.c_str(), v, true);
                                 }
+                                Locate(of.c_str());
                             }
-                        }
-                    }
-                }
-
-
-                ml.Run(iop);
-
-                for (auto& node : op.nodes)
-                {
-                    if (auto it = std::dynamic_pointer_cast<XLNODE>(node))
-                    {
-                        if (it->csv_output.length())
-                        {
-                            auto of = it->csv_output;
-                            auto pathhas = wcsrchr(of.c_str(), L'\\');
-                            if (!pathhas)
-                            {
-                                std::vector<wchar_t> pa(1000);
-                                wcscpy_s(pa.data(), 1000, current_file.c_str());
-                                std::wstring mfs = pa.data();
-                                auto p = mfs.find_last_of(L"\\");
-                                mfs = mfs.substr(0, p);
-                                mfs += L"\\";
-                                mfs += of;
-                                of = mfs;
-                            }
-
-
-                            DeleteFile(of.c_str());
-                            auto& wh = mlop.Item(node->tidx);
-                            if (!wh.buffer)
-                                continue;
-                            std::vector<char> v;
-                            wh.buffer->Download(&ml, (size_t)-1, v);
-
-                            auto ch = wcsrchr(of.c_str(), L'.');
-                            if (ch && wcscmp(ch, L".csv") == 0)
-                            {
-                                std::vector<float> fv(v.size() / 4);
-                                memcpy(fv.data(), v.data(), v.size());
-                                std::ofstream f(of);
-                                if (f.is_open())
-                                {
-                                    for (size_t i = 0; i < fv.size(); i++)
-                                    {
-                                        f << fv[i] << std::endl;
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                // Binary
-                                bool PutFile(const wchar_t* f, std::vector<char>& d, bool Fw = true);
-								PutFile(of.c_str(), v,true);    
-                            }
-                            Locate(of.c_str());
                         }
                     }
                 }
@@ -2693,13 +2724,6 @@ namespace winrt::DirectMLGraph::implementation
                             expr = (dml::Convolution(mop.Item(whati[0]), mop.Item(whati[1]), e3, (DML_CONVOLUTION_MODE)(int)it->Params[0].v));
                         }
                         
-                        // It's taken as input
-/*                        if (it->what == TYPE_CONSTANT)
-                        {
-							auto it2 = std::dynamic_pointer_cast<XLNODE_CONSTANT>(node);
-							expr = ml.ConstantValueTensor(*mop.GetGraph(), it2->Params[0].v, it2->tensor_dims);
-                        }
-*/
                         if (it->what == TYPE_COS)
                             expr = (dml::Cos(mop.Item(whati[0])));
                         if (it->what == TYPE_COSH)
@@ -2882,7 +2906,7 @@ namespace winrt::DirectMLGraph::implementation
     }
     void MLGraph::OnExit(IInspectable const&, IInspectable const&)
     {
-
+        PostMessage((HWND)wnd(), WM_CLOSE, 0, 0);
     }
     void MLGraph::OnSaveAs(IInspectable const&, IInspectable const&)
     {

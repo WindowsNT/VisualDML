@@ -46,6 +46,9 @@ struct XLNODE
     std::vector<PARAM> Params;
 
 
+    FMAP mapin;
+    //FMAP mapout;
+
     std::wstring csv_input;
     std::wstring csv_output;
     std::vector<XLNODEBULLET> children;
