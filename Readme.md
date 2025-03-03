@@ -3,10 +3,22 @@
 A tool to visually-design DirectML operators that run in the GPU.
 
 
+## Features
+
+Undo, Redo, Save, Load
+
+Multiple Visible/Active DirectML operators
+
+Direct2D Drawing
+
+Memory Sharing
+
+Input/Output CSV or binary
+
 
 ## Supported Operators
 
-A: Abs,ACos,ACosh,Add,ASin,ASinh,ATan,ATanh,ATanYX
+A: Abs,ACos,ACosh,Add,And,ASin,ASinh,ATan,ATanh,ATanYX
 
 B: BitAnd, BitCount, BitOr, BitNot, BitShiftLeft, BitShiftRight, BitXor
 
@@ -22,14 +34,19 @@ G: Gemm
 
 I: Identity
 
-M: Multiply
+L: Log
 
-N: Neg
+M: Max,Mean,Min,Multiply
+
+N: Neg, Not
+
+O: Or
 
 P: Pow
 
 S: Subtract
 
+X: Xor
 ### Pending
 
 All other operators, casts

@@ -51,7 +51,7 @@
 				<Child idx="0" io="1" u="135"/>
 			</Children>
 		</Node>
-		<Node xx="800.972656" yy="312.968750" CSV="" CSVI="" bf="0" sm="0" ni="1" Type="31" Name="Pow">
+		<Node xx="800.972656" yy="312.968750" CSV="" CSVI="" bf="0" sm="0" ni="1" Type="39" Name="Pow">
 			<Children>
 				<Child idx="0" io="0" u="135"/>
 				<Child idx="0" io="1" u="136"/>

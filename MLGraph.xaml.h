@@ -70,7 +70,8 @@ enum XLNODE_TYPE
     TYPE_FLOOR,
     TYPE_GEMM,
     TYPE_IDENTITY,
-    TYPE_MULTIPLY,
+	TYPE_LAND, TYPE_LOR, TYPE_LXOR,TYPE_LNOT,TYPE_LOG,
+    TYPE_MAX,TYPE_MEAN,TYPE_MIN,TYPE_MULTIPLY,
     TYPE_NEGATE,
     TYPE_POW,
     TYPE_SUBTRACT,
@@ -106,7 +107,15 @@ inline std::map<int, std::string> TypesToNames = {
 	{TYPE_FLOOR,"Floor"},
 	{TYPE_GEMM,"Gemm"},
 	{TYPE_IDENTITY,"Identity"},
-	{TYPE_MULTIPLY,"Multiply"},
+	{TYPE_LAND,"And"},
+	{TYPE_LOR,"Or"},
+	{TYPE_LXOR,"Xor"},
+    {TYPE_LNOT,"Not"},
+    {TYPE_LOG,"Log"},
+    {TYPE_MAX,"Max"},
+    {TYPE_MEAN,"Mean"},
+    {TYPE_MIN,"Min"},
+    {TYPE_MULTIPLY,"Multiply"},
 	{TYPE_NEGATE,"Negate"},
     {TYPE_POW,"Pow"},
     {TYPE_SUBTRACT,"Subtract"},
@@ -213,6 +222,25 @@ struct XLNODE_ANY : public XLNODE
 
 		if (what == TYPE_IDENTITY)
 			return L"Identity";
+
+        if (what == TYPE_LAND)
+            return L"And";
+        if (what == TYPE_LOR)
+            return L"Or";
+        if (what == TYPE_LXOR)
+            return L"Xor";
+        if (what == TYPE_LNOT)
+            return L"Not";
+
+        if (what == TYPE_LOG)
+            return L"Log";
+
+        if (what == TYPE_MAX)
+            return L"Max";
+        if (what == TYPE_MIN)
+            return L"Min";
+        if (what == TYPE_MEAN)
+            return L"Mean";
 
 		if (what == TYPE_MULTIPLY)
 			return L"Multiply";

@@ -137,6 +137,7 @@ void XLNODE::Draw(MLOP* mlop,bool Active,ID2D1DeviceContext5* r, D2D* d2d, size_
         d2d->RedBrush->SetOpacity(1.0f);
         d2d->CyanBrush->SetOpacity(1.0f);
     }
+    else
     if (IsOutput())
     {
         d2d->GreenBrush->SetOpacity(0.2f);
@@ -144,6 +145,15 @@ void XLNODE::Draw(MLOP* mlop,bool Active,ID2D1DeviceContext5* r, D2D* d2d, size_
         r->FillRoundedRectangle(rr, S ? d2d->RedBrush : d2d->GreenBrush);
         d2d->RedBrush->SetOpacity(1.0f);
         d2d->GreenBrush->SetOpacity(1.0f);
+    }
+    else
+    {
+        if (S)
+        {
+            d2d->RedBrush->SetOpacity(0.2f);
+            r->FillRoundedRectangle(rr, S ? d2d->RedBrush : d2d->GreenBrush);
+            d2d->RedBrush->SetOpacity(1.0f);
+        }
     }
 
     if (wcslen(hdr))
@@ -372,6 +382,12 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
         A.Items().Append(Add);
 
 
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem N; N.Text(L"And"); N.Click(fooo);
+            A.Items().Append(N);
+        }
+        
         winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem ASin; ASin.Text(L"ASin"); ASin.Click(fooo);
         A.Items().Append(ASin);
         winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem ASinh; ASinh.Text(L"ASinh"); ASinh.Click(fooo);
@@ -532,11 +548,45 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
     if (1)
     {
         winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubItem A;
+        A.Text(L"L");
+
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Log"); Neg.Click(fooo);
+            A.Items().Append(Neg);
+        }
+        r1.Items().Append(A);
+    }
+
+
+    if (1)
+    {
+        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubItem A;
         A.Text(L"M");
 
-        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Multiply"); Neg.Click(fooo);
-        A.Items().Append(Neg);
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Min"); Neg.Click(fooo);
+            A.Items().Append(Neg);
+        }
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Mean"); Neg.Click(fooo);
+            A.Items().Append(Neg);
+        }
 
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Max"); Neg.Click(fooo);
+            A.Items().Append(Neg);
+        }
+
+
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Multiply"); Neg.Click(fooo);
+            A.Items().Append(Neg);
+        }
         r1.Items().Append(A);
     }
 
@@ -549,9 +599,28 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
         winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Neg"); Neg.Click(fooo);
         A.Items().Append(Neg);
 
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem N; N.Text(L"Not"); N.Click(fooo);
+            A.Items().Append(N);
+        }
+
+
         r1.Items().Append(A);
     }
 
+    if (1)
+    {
+        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubItem A;
+        A.Text(L"O");
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem N; N.Text(L"Or"); N.Click(fooo);
+            A.Items().Append(N);
+        }
+        r1.Items().Append(A);
+
+    }
 
     if (1)
     {
@@ -575,6 +644,20 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
         r1.Items().Append(A);
     }
 
+
+
+    if (1)
+    {
+        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubItem A;
+        A.Text(L"X");
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem N; N.Text(L"Xor"); N.Click(fooo);
+            A.Items().Append(N);
+        }
+        r1.Items().Append(A);
+
+    }
 
 
     if (1)
@@ -654,6 +737,18 @@ namespace winrt::DirectMLGraph::implementation
                     FullRefresh();
                 }
                 return;
+            }
+            if (!Alt && Shift && !Control)
+            {
+				if (xl.ops.size() > (unsigned long long)(k - 0x31))
+				{
+                    Push();
+                    xl.ops.erase(xl.ops.begin() + (k - 0x31));
+                    if (ActiveOperator2 >= xl.ops.size())
+                        ActiveOperator2 = xl.ops.size() - 1;
+					FullRefresh();
+				}
+				return;
             }
         }
         if (k == VK_DELETE)
@@ -1032,6 +1127,14 @@ namespace winrt::DirectMLGraph::implementation
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
+                                if (t == L"And")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(2, TYPE_LAND);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+
                                 if (t == L"ASin")
                                 {
                                     auto node = std::make_shared<XLNODE_ANY>(1, TYPE_ASIN);
@@ -1220,7 +1323,36 @@ namespace winrt::DirectMLGraph::implementation
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
+                                if (t == L"Log")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_LOG);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
 
+
+                                if (t == L"Max")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(2, TYPE_MAX);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+                                if (t == L"Mean")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(2, TYPE_MEAN);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+                                if (t == L"Min")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(2, TYPE_MIN);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
 
                                 if (t == L"Multiply")
                                 {
@@ -1232,6 +1364,22 @@ namespace winrt::DirectMLGraph::implementation
                                 if (t == L"Neg")
                                 {
                                     auto node = std::make_shared<XLNODE_ANY>(1, TYPE_NEGATE);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+                                if (t == L"Not")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_LNOT);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+
+
+                                if (t == L"Or")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(2, TYPE_LOR);
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
@@ -1253,6 +1401,15 @@ namespace winrt::DirectMLGraph::implementation
                                 if (t == L"Subtract")
                                 {
                                     auto node = std::make_shared<XLNODE_ANY>(2, TYPE_SUBTRACT);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+
+
+                                if (t == L"Xor")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(2, TYPE_LXOR);
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
@@ -1671,6 +1828,15 @@ namespace winrt::DirectMLGraph::implementation
         {
             auto mi = MenuFlyoutItem();
 			mi.Text(ystring().Format(L"Operator %zi", i + 1));
+
+            if (i <= 9)
+            {
+                winrt::Microsoft::UI::Xaml::Input::KeyboardAccelerator kba;
+                kba.Key((winrt::Windows::System::VirtualKey)(i + 0x31));
+                kba.Modifiers(winrt::Windows::System::VirtualKeyModifiers::Shift);
+                mi.KeyboardAccelerators().Append(kba);
+            }
+
 			mi.Click([this, i](IInspectable const&, RoutedEventArgs const&)
 				{
                     Push();
@@ -2147,6 +2313,27 @@ namespace winrt::DirectMLGraph::implementation
 
                         if (it->what == TYPE_IDENTITY)
                             expr = (dml::Identity(mop.Item(whati[0])));
+
+                        if (it->what == TYPE_LAND)
+                            expr = (dml::LogicalAnd(mop.Item(whati[0]), mop.Item(whati[1])));
+                        if (it->what == TYPE_LOR)
+                            expr = (dml::LogicalOr(mop.Item(whati[0]), mop.Item(whati[1])));
+                        if (it->what == TYPE_LXOR)
+                            expr = (dml::LogicalXor(mop.Item(whati[0]), mop.Item(whati[1])));
+                        if (it->what == TYPE_LNOT)
+                            expr = (dml::LogicalNot(mop.Item(whati[0])));
+
+
+                        if (it->what == TYPE_LOG)
+                            expr = (dml::Log(mop.Item(whati[0])));
+
+                        if (it->what == TYPE_MAX)
+                            expr = (dml::Max(mop.Item(whati[0]), mop.Item(whati[1])));
+                        if (it->what == TYPE_MEAN)
+                            expr = (dml::Mean(mop.Item(whati[0]), mop.Item(whati[1])));
+                        if (it->what == TYPE_MIN)
+                            expr = (dml::Min(mop.Item(whati[0]), mop.Item(whati[1])));
+
 
                         if (it->what == TYPE_MULTIPLY)
                             expr = (dml::Multiply(mop.Item(whati[0]), mop.Item(whati[1])));
