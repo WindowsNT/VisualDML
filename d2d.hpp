@@ -115,7 +115,8 @@ struct D2D
     CComPtr<ID2D1SolidColorBrush> GreenBrush;
 	CComPtr<ID2D1SolidColorBrush> BlackBrush;
 	CComPtr<ID2D1SolidColorBrush> BGBrush;
-	CComPtr<IDWriteTextFormat> Text;
+    CComPtr<IDWriteTextFormat> Text;
+    CComPtr<IDWriteTextFormat> Text2;
 	CComPtr<IDWriteTextFormat> Text3;
 	CComPtr<ID2D1SolidColorBrush> GetD2SolidBrush(ID2D1RenderTarget* p, D2D1_COLOR_F cc)
 	{

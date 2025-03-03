@@ -11,7 +11,7 @@
 
     <NavigationView x:Name="xMain" PaneDisplayMode="LeftCompact" Loaded="OnLoad" ItemInvoked="ItemInvoked"  >
         <NavigationView.MenuItems>
-            <NavigationViewItem  Icon="Globe" Content="Graph" x:Name="ViewGraph" >
+            <NavigationViewItem  Icon="Link" Content="Graph" x:Name="ViewGraph" >
                 <NavigationViewItem.KeyboardAccelerators>
                     <KeyboardAccelerator Key="F2" />
                 </NavigationViewItem.KeyboardAccelerators>

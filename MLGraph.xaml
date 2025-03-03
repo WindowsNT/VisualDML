@@ -51,6 +51,14 @@
                     </MenuFlyoutItem.KeyboardAccelerators>
                 </MenuFlyoutItem>
                 <MenuFlyoutSeparator/>
+                <MenuFlyoutItem Text="Exit" Click="OnExit" >
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xF3B1;"/>
+                    </MenuFlyoutItem.Icon>
+                </MenuFlyoutItem>
+            </MenuBarItem>
+
+            <MenuBarItem Title="Edit" >
                 <MenuFlyoutItem Text="Undo" Click="OnUndo" >
                     <MenuFlyoutItem.Icon>
                         <FontIcon Glyph="&#xE7A7;"/>
@@ -67,32 +75,6 @@
                         <KeyboardAccelerator Key="Y" Modifiers="Control"/>
                     </MenuFlyoutItem.KeyboardAccelerators>
                 </MenuFlyoutItem>
-                <MenuFlyoutSeparator/>
-                <MenuFlyoutItem Text="Compile" Click="OnCompile" >
-                    <MenuFlyoutItem.Icon>
-                        <FontIcon Glyph="&#xE71B;"/>
-                    </MenuFlyoutItem.Icon>
-                    <MenuFlyoutItem.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="F7" />
-                    </MenuFlyoutItem.KeyboardAccelerators>
-                </MenuFlyoutItem>
-                <MenuFlyoutItem Text="Run" Click="OnRun" >
-                    <MenuFlyoutItem.Icon>
-                        <FontIcon Glyph="&#xE724;"/>
-                    </MenuFlyoutItem.Icon>
-                    <MenuFlyoutItem.KeyboardAccelerators>
-                        <KeyboardAccelerator Key="F5" />
-                    </MenuFlyoutItem.KeyboardAccelerators>
-                </MenuFlyoutItem>
-                <MenuFlyoutSeparator/>
-                <MenuFlyoutItem Text="Exit" Click="OnExit" >
-                    <MenuFlyoutItem.Icon>
-                        <FontIcon Glyph="&#xF3B1;"/>
-                    </MenuFlyoutItem.Icon>
-                </MenuFlyoutItem>
-
-
-
             </MenuBarItem>
 
             <MenuBarItem Title="Operator" >
@@ -121,6 +103,14 @@
                         <KeyboardAccelerator Key="I" Modifiers="Shift"/>
                     </MenuFlyoutItem.KeyboardAccelerators>
                 </MenuFlyoutItem>
+                <MenuFlyoutItem Text="Constant" Click="OnAddConstant" >
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE73C;"/>
+                    </MenuFlyoutItem.Icon>
+                    <MenuFlyoutItem.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="C" Modifiers="Shift"/>
+                    </MenuFlyoutItem.KeyboardAccelerators>
+                </MenuFlyoutItem>
                 <MenuFlyoutItem Text="Output" Click="OnAddOutput" >
                     <MenuFlyoutItem.Icon>
                         <FontIcon Glyph="&#xE70D;"/>
@@ -129,6 +119,36 @@
                         <KeyboardAccelerator Key="O" Modifiers="Shift"/>
                     </MenuFlyoutItem.KeyboardAccelerators>
                 </MenuFlyoutItem>
+            </MenuBarItem>
+
+
+            <MenuBarItem Title="Build">
+                <MenuFlyoutItem Text="Compile" Click="OnCompile" >
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE71B;"/>
+                    </MenuFlyoutItem.Icon>
+                    <MenuFlyoutItem.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="F7" />
+                    </MenuFlyoutItem.KeyboardAccelerators>
+                </MenuFlyoutItem>
+                <MenuFlyoutItem Text="Clean" Click="OnClean" >
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE894;"/>
+                    </MenuFlyoutItem.Icon>
+                    <MenuFlyoutItem.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="F7" Modifiers="Shift" />
+                    </MenuFlyoutItem.KeyboardAccelerators>
+                </MenuFlyoutItem>
+                <MenuFlyoutSeparator/>
+                <MenuFlyoutItem Text="Run" Click="OnRun" >
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE724;"/>
+                    </MenuFlyoutItem.Icon>
+                    <MenuFlyoutItem.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="F5" />
+                    </MenuFlyoutItem.KeyboardAccelerators>
+                </MenuFlyoutItem>
+
             </MenuBarItem>
 
         </MenuBar>

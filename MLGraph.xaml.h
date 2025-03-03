@@ -22,18 +22,20 @@ struct PARAM
 {
     std::wstring n;
     float v = 0;
+    float minv = std::numeric_limits<float>::min();
+    float maxv = std::numeric_limits<float>::max();
 };
 
 struct XLNODE
 {
 
-    int tidx = 0; // idx in MLOP
+    int tidx = -1; // idx in MLOP
     bool BufferVisible = 0;
     D2F bhit = { };
     D2F bhit2 = { };
 
 
-    unsigned long long ShareMemory = 0;
+    signed long long ShareMemory = 0;
     bool bSelected = 0;
     std::vector<PARAM> Params;
 
@@ -52,7 +54,7 @@ struct XLNODE
 
     virtual int nin() { return 0; }
     virtual int nout() { return 0; }
-    virtual void Draw(ID2D1DeviceContext5* r, D2D* d2d,size_t iop);
+    virtual void Draw(MLOP*mlop,bool Active,ID2D1DeviceContext5* r, D2D* d2d,size_t iop);
 
 };
 
@@ -65,11 +67,51 @@ enum XLNODE_TYPE
     TYPE_CEIL,TYPE_CLIP, TYPE_CONSTANT,TYPE_COS, TYPE_COSH,
     TYPE_DIVIDE,
     TYPE_ERF,TYPE_EXP,
+    TYPE_FLOOR,
+    TYPE_GEMM,
     TYPE_IDENTITY,
     TYPE_MULTIPLY,
     TYPE_NEGATE,
+    TYPE_POW,
     TYPE_SUBTRACT,
     TYPE_OUTPUT = 999999
+};
+
+inline std::map<int, std::string> TypesToNames = {
+	{TYPE_INPUT,"Input"},
+	{TYPE_ABS,"Abs"},
+	{TYPE_ACOS,"ACos"},
+	{TYPE_ACOSH,"ACosh"},
+	{TYPE_ADD,"Add"},
+	{TYPE_ASIN,"ASin"},
+	{TYPE_ASINH,"ASinh"},
+	{TYPE_ATAN,"ATan"},
+	{TYPE_ATANH,"ATanh"},
+	{TYPE_ATANYX,"ATanYX"},
+	{TYPE_BITAND,"BitAnd"},
+	{TYPE_BITCOUNT,"BitCount"},
+	{TYPE_BITNOT,"BitNot"},
+	{TYPE_BITOR,"BitOr"},
+	{TYPE_BITSL,"BitSL"},
+	{TYPE_BITSR,"BitSR"},
+	{TYPE_BITXOR,"BitXor"},
+	{TYPE_CEIL,"Ceil"},
+	{TYPE_CLIP,"Clip"},
+	{TYPE_CONSTANT,"Constant"},
+	{TYPE_COS,"Cos"},
+	{TYPE_COSH,"Cosh"},
+	{TYPE_DIVIDE,"Divide"},
+	{TYPE_ERF,"Erf"},
+	{TYPE_EXP,"Exp"},
+	{TYPE_FLOOR,"Floor"},
+	{TYPE_GEMM,"Gemm"},
+	{TYPE_IDENTITY,"Identity"},
+	{TYPE_MULTIPLY,"Multiply"},
+	{TYPE_NEGATE,"Negate"},
+    {TYPE_POW,"Pow"},
+    {TYPE_SUBTRACT,"Subtract"},
+	{TYPE_OUTPUT,"Output"}
+
 };
 
 
@@ -79,6 +121,12 @@ struct XLNODE_ANY : public XLNODE
     int howi = 0;
 
 
+    virtual int ninreq() 
+    {
+        if (what == TYPE_GEMM)
+            return nin() - 1;
+        return nin(); 
+    }
     virtual int nin() { return howi; }
     virtual int nout() { return 1; }
 
@@ -157,6 +205,12 @@ struct XLNODE_ANY : public XLNODE
 		if (what == TYPE_EXP)
 			return L"Exp";
 
+		if (what == TYPE_FLOOR)
+			return L"Floor";
+
+		if (what == TYPE_GEMM)
+			return L"Gemm";
+
 		if (what == TYPE_IDENTITY)
 			return L"Identity";
 
@@ -165,6 +219,9 @@ struct XLNODE_ANY : public XLNODE
 
         if (what == TYPE_NEGATE)
             return L"Neg";
+
+        if (what == TYPE_POW)
+            return L"Pow";
 
 		if (what == TYPE_SUBTRACT)
 			return L"Subtract";
@@ -183,7 +240,12 @@ struct XLNODE_ANY : public XLNODE
 		}
         for(auto& p : Params)
         {
-            swprintf_s(t, 1000, L"\r\n%s: %.2f", p.n.c_str(),p.v);
+            if (p.minv == 0 && p.maxv == 1)
+            {
+                swprintf_s(t, 1000, L"\r\n%s: %s", p.n.c_str(),p.v == 1 ? L"True" : L"False");
+            }
+            else
+                swprintf_s(t, 1000, L"\r\n%s: %.2f", p.n.c_str(),p.v);
             n += t;
         }
         return n;
@@ -196,11 +258,14 @@ struct XLNODE_ANY : public XLNODE
         XLNODE::Ser(ee);
         ee.vv("ni").SetValueInt(nin());
         ee.vv("Type").SetValueInt(what);
+		ee.vv("Name").SetWideValue(opname().c_str());
 		for (auto& p : Params)
 		{
 			auto& pe = ee["Params"].AddElement("Param");
 			pe.vv("Name").SetWideValue(p.n.c_str());
-			pe.vv("Value").SetValueFloat(p.v);
+            pe.vv("Value").SetValueFloat(p.v);
+            pe.vv("Min").SetValueFloat(p.minv);
+            pe.vv("Max").SetValueFloat(p.maxv);
 		}
     }
 
@@ -213,6 +278,8 @@ struct XLNODE_ANY : public XLNODE
             PARAM p;
 			p.n = pe.vv("Name").GetWideValue();
 			p.v = pe.vv("Value").GetValueFloat();
+			p.minv = pe.vv("Min").GetValueFloat(std::numeric_limits<float>::min());
+			p.maxv = pe.vv("Max").GetValueFloat(std::numeric_limits<float>::max());
 			Params.push_back(p);
         }
     }
@@ -220,7 +287,39 @@ struct XLNODE_ANY : public XLNODE
 
 };
 
+struct XLNODE_CONSTANT : public XLNODE_ANY
+{
 
+
+    XLNODE_CONSTANT() : XLNODE_ANY(0, TYPE_CONSTANT)
+    {
+        Params.push_back({ L"Value",0 });
+    }
+    std::vector<unsigned int> tensor_dims;
+
+    virtual bool IsInput() { return true; }
+
+    virtual void Ser(XML3::XMLElement& ee)
+    {
+        XLNODE_ANY::Ser(ee);
+        for (auto& d : tensor_dims)
+        {
+            auto& de = ee["Dimensions"].AddElement("Dimension");
+            de.vv("Size").SetValueInt(d);
+        }
+    }
+
+    virtual void Unser(XML3::XMLElement& e)
+    {
+        auto& ee = e["Dimensions"];
+        for (size_t i = 0; i < ee.GetChildrenNum(); i++)
+        {
+            auto& de = ee.GetChildren()[i];
+            tensor_dims.push_back(de->vv("Size").GetValueInt());
+        }
+        XLNODE_ANY::Unser(e);
+    }
+};
 
 
 
@@ -253,6 +352,7 @@ struct XLNODE_OUTPUT : public XLNODE
     virtual void Ser(XML3::XMLElement& ee)
     {
         XLNODE::Ser(ee);
+        ee.vv("Name").SetWideValue(L"Output");
         ee.vv("Type").SetValueInt(TYPE_OUTPUT);
     }
 
@@ -299,6 +399,7 @@ struct XLNODE_INPUT : public XLNODE
 
     virtual void Ser(XML3::XMLElement& ee)
     {
+        ee.vv("Name").SetWideValue(L"Input");
         XLNODE::Ser(ee);
         ee.vv("Type").SetValueInt(TYPE_INPUT);
         for (auto& d : tensor_dims)
@@ -325,6 +426,7 @@ struct XLNODE_INPUT : public XLNODE
 struct XLOP : public XLNODE
 {
     bool Visible = 1;
+    float Zoom = 1.0f;
     std::vector<std::shared_ptr<XLNODE>> nodes;
 	DML_TENSOR_DATA_TYPE data_type = DML_TENSOR_DATA_TYPE_FLOAT32;
 
@@ -333,6 +435,7 @@ struct XLOP : public XLNODE
     virtual void Ser(XML3::XMLElement& ee)
     {
 		ee.vv("DataType").SetValueInt((int)data_type);
+		ee.vv("Zoom").SetValueFloat(Zoom);
 		for (auto& n : nodes)
 		{
 			auto& ne = ee.AddElement("Node");
@@ -346,6 +449,23 @@ struct XLOP : public XLNODE
 		{
 			auto& ne = e.GetChildren()[i];
 			int nty = ne->vv("Type").GetValueInt();
+            auto namety = ne->vv("Name").GetValue();
+
+            bool F = 0;
+            for (auto& nt : TypesToNames)
+            {
+				if (nt.second == namety)
+				{
+                    F = 1;
+                    if (nty != nt.first)
+    					nty = nt.first;
+					break;
+				}
+            }
+            if (!F)
+                MessageBeep(0);
+
+
             if (nty == TYPE_INPUT)
 			{
 				auto n = std::make_shared<XLNODE_INPUT>();
@@ -356,6 +476,13 @@ struct XLOP : public XLNODE
             if (nty == TYPE_OUTPUT)
             {
                 auto n = std::make_shared<XLNODE_OUTPUT>();
+                n->Unser(*ne);
+                nodes.push_back(n);
+            }
+            else
+            if (nty == TYPE_CONSTANT)
+            {
+                auto n = std::make_shared<XLNODE_CONSTANT>();
                 n->Unser(*ne);
                 nodes.push_back(n);
             }
@@ -371,6 +498,7 @@ struct XLOP : public XLNODE
 
 		}
 		data_type = (DML_TENSOR_DATA_TYPE)e.vv("DataType").GetValueInt();
+		Zoom = e.vv("Zoom").GetValueFloat(1.0f);
 	}
 };
 
@@ -405,7 +533,7 @@ struct XL : public XLNODE
 				for (auto& c : n->children)
 				{
                     for(auto& gg : c.g)
-                        nnn = std::max(n->ShareMemory,std::max(nnn + 1,gg + 1));
+                        nnn = std::max((unsigned long long)abs(n->ShareMemory),std::max(nnn + 1,gg + 1));
 				}
 			}
 		}
@@ -499,6 +627,7 @@ namespace winrt::DirectMLGraph::implementation
         void OnLoaded(IInspectable, IInspectable);
         void OnUndo(IInspectable const&, IInspectable const&);
         void OnRedo(IInspectable const&, IInspectable const&);
+        void OnClean(IInspectable const&, IInspectable const&);
         void OnCompile(IInspectable const&, IInspectable const&);
         void OnRun(IInspectable const&, IInspectable const&);
         void OnAddOp(IInspectable const&, IInspectable const&);

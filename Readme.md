@@ -16,11 +16,17 @@ D: Divide
 
 E: Erf, Exp
 
+F: Floor
+
+G: Gemm
+
 I: Identity
 
 M: Multiply
 
 N: Neg
+
+P: Pow
 
 S: Subtract
 

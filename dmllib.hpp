@@ -150,8 +150,12 @@ public:
 
 
 
-
+	std::shared_ptr<dml::Graph> GetGraph()
+	{
+		return graph;
+	}
 	MLOP(ML* ml);
+	size_t Count();
 	MLOP_ITEM& Item(size_t i);
 	MLOP_ITEM& WithTag(LPARAM tag);
 	MLOP_ITEM* WithTag2(LPARAM tag);
@@ -171,6 +175,7 @@ class ML
 private:
 
 	bool Debug = 0;
+	DML_FEATURE_LEVEL dmlMinFeatureLevel = DML_FEATURE_LEVEL_1_0;
 
 public:
 	CComPtr<ID3D12Device> d3D12Device;
@@ -183,6 +188,12 @@ public:
 	CComPtr<ID3D12DescriptorHeap> descriptorHeap;
 
 	ML(bool dbg = 0);
+	void SetDebug(bool d) {
+		Debug = d;
+	}
+	void SetFeatureLevel(DML_FEATURE_LEVEL f) {
+		dmlMinFeatureLevel = f;
+	}
 	HRESULT On();
 	HRESULT InitializeDirect3D12();
 	HRESULT CreateDML();

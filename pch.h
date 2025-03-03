@@ -14,6 +14,7 @@
 #include <set>
 #include <functional>
 #include <memory>
+#include <limits>
 #include <vector>
 #include <shlobj.h>
 #include <cmath>
