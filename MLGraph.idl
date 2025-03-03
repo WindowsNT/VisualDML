@@ -5,7 +5,7 @@ namespace DirectMLGraph
     {
         MLGraph();
         Int64 wnd;
-        void Key(Int64 k);
+        void Key(Int64 k,Boolean FromCMD);
         void Refresh();
         void Resize();
         String i0;

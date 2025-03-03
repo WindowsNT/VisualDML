@@ -115,6 +115,7 @@
     <Manifest Include="app.manifest" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Item.h" />
     <ClInclude Include="MLGraph.xaml.h">
       <DependentUpon>MLGraph.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -137,6 +138,7 @@
   <ItemGroup>
     <ClCompile Include="dmllib.cpp" />
     <ClCompile Include="func.cpp" />
+    <ClCompile Include="Item.cpp" />
     <ClCompile Include="MLGraph.xaml.cpp">
       <DependentUpon>MLGraph.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -153,6 +155,7 @@
     <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Midl Include="Item.idl" />
     <Midl Include="MainWindow.idl">
       <SubType>Code</SubType>
       <DependentUpon>MainWindow.xaml</DependentUpon>

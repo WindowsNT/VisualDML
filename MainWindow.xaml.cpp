@@ -66,7 +66,7 @@ namespace winrt::DirectMLGraph::implementation
 								auto co = fr.Content().try_as<winrt::DirectMLGraph::MLGraph>();
 								if (co)
 								{
-									co.Key((long long)a.Key());
+									co.Key((long long)a.Key(),false);
 								}
 							}
 						}

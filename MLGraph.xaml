@@ -59,6 +59,31 @@
             </MenuBarItem>
 
             <MenuBarItem Title="Edit" >
+                <MenuFlyoutItem Text="Copy" Click="OnCopy" >
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE8C8;"/>
+                    </MenuFlyoutItem.Icon>
+                    <MenuFlyoutItem.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="C" Modifiers="Control"/>
+                    </MenuFlyoutItem.KeyboardAccelerators>
+                </MenuFlyoutItem>
+                <MenuFlyoutItem Text="Paste" Click="OnPaste" >
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE77F;"/>
+                    </MenuFlyoutItem.Icon>
+                    <MenuFlyoutItem.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="V" Modifiers="Control"/>
+                    </MenuFlyoutItem.KeyboardAccelerators>
+                </MenuFlyoutItem>
+                <MenuFlyoutItem Text="Delete" Click="OnDelete" >
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE74D;"/>
+                    </MenuFlyoutItem.Icon>
+                    <MenuFlyoutItem.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="Delete" />
+                    </MenuFlyoutItem.KeyboardAccelerators>
+                </MenuFlyoutItem>
+                <MenuFlyoutSeparator/>
                 <MenuFlyoutItem Text="Undo" Click="OnUndo" >
                     <MenuFlyoutItem.Icon>
                         <FontIcon Glyph="&#xE7A7;"/>
@@ -153,8 +178,22 @@
 
         </MenuBar>
 
-        <SwapChainPanel x:Name="scp">
-        </SwapChainPanel>
 
+        <ScrollView ContentOrientation="None" x:Name="scv"
+    ZoomMode="Enabled" 
+    VerticalAlignment="Top" HorizontalAlignment="Left"
+     HorizontalScrollBarVisibility="Visible"
+     VerticalScrollBarVisibility="Visible">
+
+            <SwapChainPanel  x:Name="scp" AllowDrop="True" >
+                <ToolTipService.ToolTip>
+                    <ToolTip x:Name="Tooltip" Visibility="Collapsed" Content="" VerticalOffset="0" HorizontalOffset="0"/>
+                </ToolTipService.ToolTip>
+            </SwapChainPanel>
+            </ScrollView>
+
+
+
+        
     </StackPanel>
 </Page>

@@ -50,6 +50,7 @@ struct XLNODE
     virtual void Unser(XML3::XMLElement& e);
     bool S = 0;
     virtual std::wstring name() = 0;
+    virtual std::wstring subname() = 0;
     D2F hit = {};
 
     virtual int nin() { return 0; }
@@ -74,7 +75,7 @@ enum XLNODE_TYPE
     TYPE_MAX,TYPE_MEAN,TYPE_MIN,TYPE_MULTIPLY,
     TYPE_NEGATE,
     TYPE_POW,
-    TYPE_SUBTRACT,
+    TYPE_SUBTRACT,TYPE_SQRT,
     TYPE_OUTPUT = 999999
 };
 
@@ -119,6 +120,7 @@ inline std::map<int, std::string> TypesToNames = {
 	{TYPE_NEGATE,"Negate"},
     {TYPE_POW,"Pow"},
     {TYPE_SUBTRACT,"Subtract"},
+    {TYPE_SQRT,"Sqrt"},
 	{TYPE_OUTPUT,"Output"}
 
 };
@@ -253,29 +255,38 @@ struct XLNODE_ANY : public XLNODE
 
 		if (what == TYPE_SUBTRACT)
 			return L"Subtract";
+        if (what == TYPE_SQRT)
+            return L"Sqrt";
 
         return L"Unknown";
+    }
+
+
+    virtual std::wstring subname()
+    {
+        std::wstring n;
+        wchar_t t[1000] = {};
+        if (csv_output.length())
+        {
+            n += L"\r\n";
+            n += csv_output;
+        }
+        for (auto& p : Params)
+        {
+            if (p.minv == 0 && p.maxv == 1)
+            {
+                swprintf_s(t, 1000, L"\r\n%s: %s", p.n.c_str(), p.v == 1 ? L"True" : L"False");
+            }
+            else
+                swprintf_s(t, 1000, L"\r\n%s: %.2f", p.n.c_str(), p.v);
+            n += t;
+        }
+        return n;
     }
 
     virtual std::wstring name()
     {
         auto n = opname();
-        wchar_t t[1000] = {};
-        if (csv_output.length())
-		{
-			n += L"\r\n";
-			n += csv_output;
-		}
-        for(auto& p : Params)
-        {
-            if (p.minv == 0 && p.maxv == 1)
-            {
-                swprintf_s(t, 1000, L"\r\n%s: %s", p.n.c_str(),p.v == 1 ? L"True" : L"False");
-            }
-            else
-                swprintf_s(t, 1000, L"\r\n%s: %.2f", p.n.c_str(),p.v);
-            n += t;
-        }
         return n;
     }
 
@@ -365,14 +376,17 @@ struct XLNODE_OUTPUT : public XLNODE
         children.push_back(bu);
     }
 
+    virtual std::wstring subname()
+    {
+        std::wstring dr;
+        if (csv_output.length())
+            dr += csv_output;
+        return L"";
+    }
+
     virtual std::wstring name()
     {
-        std::wstring dr = L"Output\r\n";
-        if (csv_output.length())
-        {
-            dr += L"\r\n";
-            dr += csv_output;
-        }
+        std::wstring dr = L"Output";
         return dr;
     }
 
@@ -406,19 +420,26 @@ struct XLNODE_INPUT : public XLNODE
     	children.push_back(bu);
     }
 
-    virtual std::wstring name()
+    virtual std::wstring subname()
     {
-        std::wstring dr = L"Input\r\n";
-		for (auto& d : tensor_dims)
-		{
-			dr += std::to_wstring(d) + L"x";
-		}
+        std::wstring dr;
+        for (auto& d : tensor_dims)
+        {
+            dr += std::to_wstring(d) + L"x";
+        }
         dr.pop_back();
         if (csv_input.length())
         {
-			dr += L"\r\n";
-			dr += csv_input;
+            dr += L"\r\n";
+            dr += csv_input;
         }
+        return L"";
+    }
+
+
+    virtual std::wstring name()
+    {
+        std::wstring dr = L"Input";
 		return dr;
     }
 
@@ -459,6 +480,7 @@ struct XLOP : public XLNODE
 	DML_TENSOR_DATA_TYPE data_type = DML_TENSOR_DATA_TYPE_FLOAT32;
 
     virtual std::wstring name() { return L"Operator"; }
+    virtual std::wstring subname() { return L""; }
 
     virtual void Ser(XML3::XMLElement& ee)
     {
@@ -470,60 +492,66 @@ struct XLOP : public XLNODE
 			n->Ser(ne);
 		}
     }
+
+    std::shared_ptr<XLNODE> Unser2(XML3::XMLElement& ne)
+    {
+        int nty = ne.vv("Type").GetValueInt();
+        auto namety = ne.vv("Name").GetValue();
+
+        bool F = 0;
+        for (auto& nt : TypesToNames)
+        {
+            if (nt.second == namety)
+            {
+                F = 1;
+                if (nty != nt.first)
+                    nty = nt.first;
+                break;
+            }
+        }
+        if (!F)
+            MessageBeep(0);
+
+
+        if (nty == TYPE_INPUT)
+        {
+            auto n = std::make_shared<XLNODE_INPUT>();
+            n->Unser(ne);
+            return n;
+        }
+        else
+        if (nty == TYPE_OUTPUT)
+        {
+            auto n = std::make_shared<XLNODE_OUTPUT>();
+            n->Unser(ne);
+            return n;
+        }
+        else
+        if (nty == TYPE_CONSTANT)
+        {
+            auto n = std::make_shared<XLNODE_CONSTANT>();
+            n->Unser(ne);
+            return n;
+        }
+        else
+        {
+            int ni = ne.vv("ni").GetValueInt();
+            if (ni == 0)
+                ni = 1;
+            auto n = std::make_shared<XLNODE_ANY>(ni, nty);
+            n->Unser(ne);
+            return n;
+        }
+    }
+
 	virtual void Unser(XML3::XMLElement& e)
 	{
         nodes.clear();
 		for (size_t i = 0; i < e.GetChildrenNum(); i++)
 		{
 			auto& ne = e.GetChildren()[i];
-			int nty = ne->vv("Type").GetValueInt();
-            auto namety = ne->vv("Name").GetValue();
-
-            bool F = 0;
-            for (auto& nt : TypesToNames)
-            {
-				if (nt.second == namety)
-				{
-                    F = 1;
-                    if (nty != nt.first)
-    					nty = nt.first;
-					break;
-				}
-            }
-            if (!F)
-                MessageBeep(0);
-
-
-            if (nty == TYPE_INPUT)
-			{
-				auto n = std::make_shared<XLNODE_INPUT>();
-				n->Unser(*ne);
-				nodes.push_back(n);
-			}
-            else
-            if (nty == TYPE_OUTPUT)
-            {
-                auto n = std::make_shared<XLNODE_OUTPUT>();
-                n->Unser(*ne);
-                nodes.push_back(n);
-            }
-            else
-            if (nty == TYPE_CONSTANT)
-            {
-                auto n = std::make_shared<XLNODE_CONSTANT>();
-                n->Unser(*ne);
-                nodes.push_back(n);
-            }
-            else
-            {
-				int ni = ne->vv("ni").GetValueInt();
-                if (ni == 0)
-                    ni = 1;
-                auto n = std::make_shared<XLNODE_ANY>(ni, nty);
-                n->Unser(*ne);
-                nodes.push_back(n);
-            }
-
+			auto n = Unser2(*ne);
+			nodes.push_back(n);
 		}
 		data_type = (DML_TENSOR_DATA_TYPE)e.vv("DataType").GetValueInt();
 		Zoom = e.vv("Zoom").GetValueFloat(1.0f);
@@ -534,6 +562,7 @@ struct XL : public XLNODE
 {
     std::vector<XLOP> ops;
     virtual std::wstring name() { return L"DML"; }
+    virtual std::wstring subname() { return L""; }
 
     virtual void Ser(XML3::XMLElement& ee)
     {
@@ -650,9 +679,12 @@ namespace winrt::DirectMLGraph::implementation
         void Push();
         void Undo();
         void Unselect();
-        void Key(long long k);
+        void Key(long long k,bool FromCmd = 0);
         void RefreshMenu();
         void OnLoaded(IInspectable, IInspectable);
+        void OnCopy(IInspectable const&, IInspectable const&);
+        void OnPaste(IInspectable const&, IInspectable const&);
+        void OnDelete(IInspectable const&, IInspectable const&);
         void OnUndo(IInspectable const&, IInspectable const&);
         void OnRedo(IInspectable const&, IInspectable const&);
         void OnClean(IInspectable const&, IInspectable const&);

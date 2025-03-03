@@ -11,6 +11,7 @@ using namespace winrt::Microsoft::UI::Xaml::Controls;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
+extern std::map<HWND, winrt::Windows::Foundation::IInspectable> windows;
 
 
 std::shared_ptr<XLNODE> MovingNodeP = nullptr;
@@ -83,9 +84,16 @@ void XLNODE::Draw(MLOP* mlop,bool Active,ID2D1DeviceContext5* r, D2D* d2d, size_
 {
     TEXTALIGNPUSH tep(d2d->Text, DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
     TEXTALIGNPUSH tep2(d2d->Text2, DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
-    auto msr = d2d->MeasureString(d2d->WriteFa.get(), d2d->Text, name().c_str());
-    if (std::get<0>(msr) <= 100)
-		std::get<0>(msr) = 100;
+
+    const auto name1 = name();
+    const auto name2 = subname();
+
+    auto msr1 = d2d->MeasureString(d2d->WriteFa.get(), d2d->Text, name1.c_str());
+    if (std::get<0>(msr1) <= 100)
+		std::get<0>(msr1) = 100;
+    auto msr2 = d2d->MeasureString(d2d->WriteFa.get(), d2d->Text2, name2.c_str());
+    if (name2.length() == 0)
+        std::get<1>(msr2) = 0;
 
 
     wchar_t hdr[100] = {};
@@ -124,10 +132,25 @@ void XLNODE::Draw(MLOP* mlop,bool Active,ID2D1DeviceContext5* r, D2D* d2d, size_
 		toth = std::get<1>(msrheader);
 
     float hmarg = 10 + toth + std::max(nin(), nout()) * 10;
-    D2D1_RECT_F rtext = { hit.left + 10, hit.top + hmarg, hit.left + 10 + std::get<0>(msr), hit.top + hmarg + std::get<1>(msr) };
+    D2D1_RECT_F rtext = { hit.left + 10, hit.top + hmarg, hit.left + 10 + std::get<0>(msr1) + std::get<0>(msr2), hit.top + hmarg + std::get<1>(msr1) + std::get<1>(msr2) };
     hit.right = rtext.right + 10;
     hit.bottom = rtext.bottom + hmarg;
-    r->DrawTextW(name().c_str(), (UINT32)name().length(), d2d->Text, rtext, d2d->BlackBrush);
+    if (1)
+    {
+        if (name2.length())
+        {
+            TEXTALIGNPUSH tep3(d2d->Text, DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
+            r->DrawTextW(name1.c_str(), (UINT32)name1.length(), d2d->Text, rtext, d2d->BlackBrush);
+        }
+        else
+            r->DrawTextW(name1.c_str(), (UINT32)name1.length(), d2d->Text, rtext, d2d->BlackBrush);
+    }
+    if (name2.length())
+    {
+        TEXTALIGNPUSH tep3(d2d->Text2, DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_FAR);
+        r->DrawTextW(name2.c_str(), (UINT32)name2.length(), d2d->Text2, rtext, d2d->BlackBrush);
+    }
+//    r->DrawRectangle(rtext, Active ? d2d->RedBrush : d2d->BlackBrush);
     D2D1_ROUNDED_RECT rr = { hit, 10,10 };
     if (IsInput())
     {
@@ -638,8 +661,16 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
         winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubItem A;
         A.Text(L"S");
 
-        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Subtract"); Neg.Click(fooo);
-        A.Items().Append(Neg);
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Subtract"); Neg.Click(fooo);
+            A.Items().Append(Neg);
+        }
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Sqrt"); Neg.Click(fooo);
+            A.Items().Append(Neg);
+        }
 
         r1.Items().Append(A);
     }
@@ -685,7 +716,7 @@ namespace winrt::DirectMLGraph::implementation
         Paint();
     }
 
-    void MLGraph::Key(long long k)
+    void MLGraph::Key(long long k,bool FromCmd)
     {
         [[maybe_unused]] bool Shift = ((GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0);
         [[maybe_unused]] bool Control = ((GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0);
@@ -751,8 +782,9 @@ namespace winrt::DirectMLGraph::implementation
 				return;
             }
         }
-        if (k == VK_DELETE)
+        if (k == VK_DELETE && FromCmd)
         {
+            bool P1 = 0;
             for (size_t i = 0; i < xl.ops.size(); i++)
             {
                 auto& op = xl.ops[i];
@@ -760,7 +792,9 @@ namespace winrt::DirectMLGraph::implementation
                 {
                     if (op.nodes[ii]->bSelected)
                     {
-                        Push();
+                        if (!P1)
+                            Push();
+                        P1 = 1;
                         op.nodes[ii]->ShareMemory = 0;
                         FullRefresh();
                         return;
@@ -768,18 +802,26 @@ namespace winrt::DirectMLGraph::implementation
 
                     if (op.nodes[ii]->S)
                     {
-                        Push();
+                        if (!P1)
+                            Push();
+                        P1 = 1;
                         op.nodes.erase(op.nodes.begin() + ii);
                         if (op.nodes.empty() && xl.ops.size() > 1)
-							xl.ops.erase(xl.ops.begin() + i);
+                        {
+                            xl.ops.erase(xl.ops.begin() + i);
+                            return;
+                        }
                         FullRefresh();
-                        return;
+                        ii--;
+                        continue;
                     }
                     for (size_t iii = 0; iii < op.nodes[ii]->children.size(); iii++)
                     {
                         if (op.nodes[ii]->children[iii].S)
                         {
-                            Push();
+                            if (!P1)
+                                Push();
+                            P1 = 1;
                             op.nodes[ii]->children[iii].g.clear();
                             FullRefresh();
                             return;
@@ -816,6 +858,7 @@ namespace winrt::DirectMLGraph::implementation
 
         auto sp = Content().as<Panel>();
         auto scp = sp.FindName(L"scp").as<SwapChainPanel>();
+        auto scv = sp.FindName(L"scv").as<ScrollView>();
         static int Once = 0;
         if (Once)
             return;
@@ -952,6 +995,10 @@ namespace winrt::DirectMLGraph::implementation
 
         scp.PointerPressed([this](IInspectable const& sender, winrt::Microsoft::UI::Xaml::Input::PointerRoutedEventArgs const& a)
             {
+                [[maybe_unused]] bool Shift = ((GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0);
+                [[maybe_unused]] bool Control = ((GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0);
+                [[maybe_unused]] bool Alt = ((GetAsyncKeyState(VK_MENU) & 0x8000) != 0);
+
                 bool Right = ((GetAsyncKeyState(VK_RBUTTON) & 0x8000) != 0);
                 bool Left = ((GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0);
                 if (!Left && !Right)
@@ -1406,6 +1453,13 @@ namespace winrt::DirectMLGraph::implementation
                                     op.nodes.push_back(node);
                                 }
 
+                                if (t == L"Sqrt")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_SQRT);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
 
                                 if (t == L"Xor")
                                 {
@@ -1434,7 +1488,8 @@ namespace winrt::DirectMLGraph::implementation
                 }
 
 
-                Unselect();
+                if (!Shift)
+                   Unselect();
 
 				for (size_t i = 0; i < xl.ops.size(); i++)
 				{
@@ -1486,11 +1541,21 @@ namespace winrt::DirectMLGraph::implementation
         auto he = (float)(rc.bottom - rc.top);
         auto wi = (float)(rc.right - rc.left);
         auto scp = sp.FindName(L"scp").as<SwapChainPanel>();
+        auto scv = sp.FindName(L"scv").as<ScrollView>();
         auto menh = men.ActualHeight();
         if (menh < 0)
             return;
         he -= (float)menh;
 
+		auto wnd2 = windows[(HWND)wnd()];
+        if (wnd2)
+        {
+            auto topj = wnd2.as<MainWindow>().Content().as<NavigationView>();
+            if (topj)
+            {
+                wi -= 50;
+            }
+        }
 //        auto sp1 = sp.FindName(L"sp1").as<StackPanel>();
  //       auto sp2 = sp.FindName(L"sp2").as<StackPanel>();
   //      he -= (float)(sp1.ActualHeight() + sp2.ActualHeight());
@@ -1499,12 +1564,17 @@ namespace winrt::DirectMLGraph::implementation
 
 //        scp.Focus(FocusState::Keyboard);
 
-        scp.Width(wi);
-        scp.Height(he);
+        float ActualSize = 2.0f;
+
+        scp.Width(wi*ActualSize);
+        scp.Height(he * ActualSize);
+
+        scv.Width(wi);
+        scv.Height(he);
 
         if (d2d)
         {
-            if (d2d->SizeCreated.cx != wi || d2d->SizeCreated.cy != he)
+            if (d2d->SizeCreated.cx != (wi * ActualSize) || d2d->SizeCreated.cy != (he * ActualSize))
             {
                 d2d->Off();
                 d2d = 0;
@@ -1522,10 +1592,10 @@ namespace winrt::DirectMLGraph::implementation
         if (!d2d)
         {
             d2d = std::make_shared<D2D>();
-            d2d->CreateD2X(0, (int)wi, (int)he, 1, 0, 0, 1);
+            d2d->CreateD2X(0, (int)(wi * ActualSize), (int)(he * ActualSize), 1, 0, 0, 1);
         }
         else
-            d2d->Resize((int)wi, (int)he);
+            d2d->Resize((int)(wi * ActualSize), (int)(he * ActualSize));
 
 
         IInspectable i = (IInspectable)scp;
@@ -1550,6 +1620,49 @@ namespace winrt::DirectMLGraph::implementation
                 m_propertyChanged(*this, Microsoft::UI::Xaml::Data::PropertyChangedEventArgs{ s });
         }
         Paint();
+    }
+
+    std::vector<XML3::XMLElement> clipboard;
+    void MLGraph::OnCopy(IInspectable const&, IInspectable const&)
+    {
+        clipboard.clear();
+		for (auto& op : xl.ops)
+		{
+            for (auto& n : op.nodes)
+            {
+				if (n->S)
+				{
+					XML3::XMLElement el;
+					n->Ser(el);
+					clipboard.push_back(el);
+				}
+
+            }
+		}   
+    }
+    void MLGraph::OnPaste(IInspectable const&, IInspectable const&)
+    {
+        bool p1 = 0;
+        for (auto& e : clipboard)
+        {
+			if (!p1)
+			{
+				Push();
+				p1 = 1;
+			}
+
+			auto& op = xl.ops[ActiveOperator2];
+            auto n = op.Unser2(e);
+			for (auto& e3 : n->children)
+				e3.g.clear();
+            n->hit.left = 0; n->hit.top = 0;
+            op.nodes.push_back(n);
+        }
+		FullRefresh();
+    }
+    void MLGraph::OnDelete(IInspectable const&, IInspectable const&)
+    {
+		Key(VK_DELETE,true);
     }
 
     void MLGraph::OnUndo(IInspectable const&, IInspectable const&)
@@ -2347,6 +2460,8 @@ namespace winrt::DirectMLGraph::implementation
                         if (it->what == TYPE_SUBTRACT)
                             expr = (dml::Subtract(mop.Item(whati[0]), mop.Item(whati[1])));
 
+                        if (it->what == TYPE_SQRT)
+                            expr = (dml::Sqrt(mop.Item(whati[0])));
 
 
                         Y = 1;

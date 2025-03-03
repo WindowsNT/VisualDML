@@ -44,7 +44,7 @@ O: Or
 
 P: Pow
 
-S: Subtract
+S: Subtract, Sqrt
 
 X: Xor
 ### Pending
