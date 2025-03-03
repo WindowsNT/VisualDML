@@ -202,7 +202,6 @@ void XLNODE::Draw(MLOP* mlop,bool Active,ID2D1DeviceContext5* r, D2D* d2d, size_
 
 	children.resize(nin() + nout());    
 
-
     float elr = 7.5f;
 
     for (int i = 0; i < 2; i++)
@@ -242,7 +241,8 @@ void XLNODE::Draw(MLOP* mlop,bool Active,ID2D1DeviceContext5* r, D2D* d2d, size_
 			{
 				Red = 1;
 			}
-            r->FillEllipse(el, Red ? d2d->RedBrush : d2d->BlackBrush);
+            bool Connected = false;
+            r->FillEllipse(el, Red ? d2d->RedBrush : Connected ? d2d->CyanBrush : d2d->BlackBrush);
             ch.hit = D2D1_RECT_F({ el.point.x - el.radiusX, el.point.y - el.radiusY, el.point.x + el.radiusX, el.point.y + el.radiusY });
         }
 
@@ -280,7 +280,8 @@ void XLNODE::Draw(MLOP* mlop,bool Active,ID2D1DeviceContext5* r, D2D* d2d, size_
         bhit.top = hit.bottom - 5;
 		bhit.bottom = hit.bottom + 5;
 		D2D1_ROUNDED_RECT rr4 = { bhit, 5,5 };
-		r->FillRoundedRectangle(rr4, bSelected ? d2d->RedBrush : d2d->SnapBrush2);
+        if (ShareMemory >= 0)   
+    		r->FillRoundedRectangle(rr4, bSelected ? d2d->RedBrush : ShareMemory > 0 ? d2d->CyanBrush : d2d->BlackBrush);
     }
 
     if (IsInput())
@@ -295,7 +296,7 @@ void XLNODE::Draw(MLOP* mlop,bool Active,ID2D1DeviceContext5* r, D2D* d2d, size_
         {
             Red = 1;
         }
-        r->FillRoundedRectangle(rr4, Red ? d2d->RedBrush : d2d->SnapBrush2);
+        r->FillRoundedRectangle(rr4, Red ? d2d->RedBrush : ShareMemory < 0 ? d2d->CyanBrush : d2d->BlackBrush);
     }
 }
 
@@ -361,10 +362,36 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildNodeRightMenu(std::shared_
 
     if (Type  == 1 || Type == 2 || Type == 3)
     {
-        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSeparator s;
-        r1.Items().Append(s);
-        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem O; O.Text(L"CSV output..."); O.Click(fooo);
-        r1.Items().Append(O);
+        if (nd->Params.size())
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSeparator s;
+            r1.Items().Append(s);
+        }
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubItem A;
+            A.Text(L"Output");
+
+            if (1)
+            {
+                winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem O; O.Text(L"CSV output..."); O.Click(fooo);
+                A.Items().Append(O);
+            }
+            if (1)
+            {
+                winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem O; O.Text(L"Binary output..."); O.Click(fooo);
+                A.Items().Append(O);
+            }
+            if (1)
+            {
+                winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem O; O.Text(L"Clear output"); O.Click(fooo);
+                A.Items().Append(O);
+            }
+
+            r1.Items().Append(A);
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSeparator s;
+            r1.Items().Append(s);
+        }
 		winrt::Microsoft::UI::Xaml::Controls::ToggleMenuFlyoutItem O1; O1.Text(L"Buffer Visible"); O1.Click(fooo); O1.IsChecked(nd->BufferVisible);
         r1.Items().Append(O1);
     }
@@ -498,7 +525,24 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
             winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem N; N.Text(L"Cosh"); N.Click(fooo);
             A.Items().Append(N);
         }
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Convolution"); Neg.Click(fooo);
+            A.Items().Append(Neg);
+        }
+        if (1)
+        {
+			winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem N; N.Text(L"CummulativeProduct"); N.Click(fooo);
+			A.Items().Append(N);
+        }
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem N; N.Text(L"CummulativeSum"); N.Click(fooo);
+            A.Items().Append(N);
+
+        }
         r1.Items().Append(A);
+
 
 
 
@@ -656,11 +700,29 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
         r1.Items().Append(A);
     }
 
+
+    if (1)
+    {
+        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubItem A;
+        A.Text(L"R");
+
+        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Round"); Neg.Click(fooo);
+        A.Items().Append(Neg);
+
+        r1.Items().Append(A);
+    }
+
+
     if (1)
     {
         winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubItem A;
         A.Text(L"S");
 
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Sign"); Neg.Click(fooo);
+            A.Items().Append(Neg);
+        }
         if (1)
         {
             winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Subtract"); Neg.Click(fooo);
@@ -676,6 +738,18 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
     }
 
 
+    if (1)
+    {
+        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubItem A;
+        A.Text(L"T");
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem N; N.Text(L"Threshold"); N.Click(fooo);
+            A.Items().Append(N);
+        }
+        r1.Items().Append(A);
+
+    }
 
     if (1)
     {
@@ -795,7 +869,17 @@ namespace winrt::DirectMLGraph::implementation
                         if (!P1)
                             Push();
                         P1 = 1;
+                        auto c = op.nodes[ii]->ShareMemory;
                         op.nodes[ii]->ShareMemory = 0;
+
+                        for (auto& op2 : xl.ops)
+                        {
+                            for (auto& n2 : op2.nodes)
+                            {
+								if (n2->ShareMemory == -c)
+									n2->ShareMemory = 0;
+                            }
+                        }
                         FullRefresh();
                         return;
                     }
@@ -1072,6 +1156,7 @@ namespace winrt::DirectMLGraph::implementation
                                         }
                                         if (t == L"Clear input")
                                         {
+                                            Push();
                                             auto it = std::dynamic_pointer_cast<XLNODE_INPUT>(nod);
 											it->csv_input.clear();
 											FullRefresh();
@@ -1089,6 +1174,7 @@ namespace winrt::DirectMLGraph::implementation
                                             of.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
                                             if (!GetOpenFileName(&of))
                                                 return;
+                                            Push();
                                             it->csv_input = fnx.data();
                                             FullRefresh();
                                         }
@@ -1106,6 +1192,7 @@ namespace winrt::DirectMLGraph::implementation
                                             of.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
                                             if (!GetOpenFileName(&of))
                                                 return;
+                                            Push();
                                             it->csv_input = fnx.data();
                                             FullRefresh();
                                         }
@@ -1130,7 +1217,31 @@ namespace winrt::DirectMLGraph::implementation
                                             of.Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
                                             if (!GetSaveFileName(&of))
                                                 return;
+                                            Push();
                                             it->csv_output = fnx.data();
+                                            FullRefresh();
+                                        }
+                                        if (t == L"Binary output...")
+                                        {
+                                            auto it = std::dynamic_pointer_cast<XLNODE>(nod);
+                                            wcscpy_s(fnx.data(), 10000, it->csv_output.c_str());
+                                            OPENFILENAME of = { 0 };
+                                            of.lStructSize = sizeof(of);
+                                            of.hwndOwner = (HWND)wnd();
+                                            of.lpstrFilter = L"*.*\0*.*\0\0";
+                                            of.lpstrFile = fnx.data();
+                                            of.nMaxFile = 10000;
+                                            of.Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
+                                            if (!GetSaveFileName(&of))
+                                                return;
+                                            Push();
+                                            it->csv_output = fnx.data();
+                                            FullRefresh();
+                                        }
+                                        if (t == L"Clear output")
+                                        {
+                                            Push();
+                                            nod->csv_output.clear();
                                             FullRefresh();
                                         }
 
@@ -1315,6 +1426,59 @@ namespace winrt::DirectMLGraph::implementation
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
+
+                                if (t == L"Convolution")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(3, TYPE_CONVOLUTION);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    node->Params.resize(1);
+                                    node->Params[0].n = L"Cross";
+                                    node->Params[0].v = 0.0f;
+                                    node->Params[0].minv = 0;
+                                    node->Params[0].maxv = 1;
+                                    op.nodes.push_back(node);
+                                }
+                                if (t == L"CummulativeSum")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_CUMSUM);
+                                    node->Params.resize(3);
+                                    node->Params[0].n = L"Axis";
+                                    node->Params[0].v = 0.0f;
+                                    node->Params[1].n = L"Decreasing";
+                                    node->Params[1].v = 0.0f;
+                                    node->Params[1].minv = 0.0f;
+                                    node->Params[1].maxv = 1.0f;
+                                    node->Params[2].n = L"Exclude Current";
+                                    node->Params[2].v = 0.0f;
+                                    node->Params[2].minv = 0.0f;
+                                    node->Params[2].maxv = 1.0f;
+
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+
+                                if (t == L"CummulativeProduct")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_CUMPROD);
+                                    node->Params.resize(3);
+                                    node->Params[0].n = L"Axis";
+                                    node->Params[0].v = 0.0f;
+                                    node->Params[1].n = L"Decreasing";
+                                    node->Params[1].v = 0.0f;
+                                    node->Params[1].minv = 0.0f;
+                                    node->Params[1].maxv = 1.0f;
+                                    node->Params[2].n = L"Exclude Current";
+                                    node->Params[2].v = 0.0f;
+                                    node->Params[2].minv = 0.0f;
+                                    node->Params[2].maxv = 1.0f;
+
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+
                                 if (t == L"Divide")
                                 {
                                     auto node = std::make_shared<XLNODE_ANY>(2, TYPE_DIVIDE);
@@ -1351,10 +1515,10 @@ namespace winrt::DirectMLGraph::implementation
                                     node->Params.resize(4);
                                     node->Params[0].n = L"Transpose 1";
                                     node->Params[0].v = 0.0f;
-                                    node->Params[1].n = L"Transpose 2";
-                                    node->Params[1].v = 0.0f;
                                     node->Params[0].minv = 0;
                                     node->Params[0].maxv = 1;
+                                    node->Params[1].n = L"Transpose 2";
+                                    node->Params[1].v = 0.0f;
                                     node->Params[1].minv = 0;
                                     node->Params[1].maxv = 1;
                                     node->Params[2].n = L"Alpha";
@@ -1444,6 +1608,19 @@ namespace winrt::DirectMLGraph::implementation
                                     op.nodes.push_back(node);
                                 }
 
+                                if (t == L"Round")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_ROUND);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    node->Params.resize(1);
+                                    node->Params[0].n = L"Mode";
+                                    node->Params[0].v = 0.0f;
+                                    node->Params[0].minv = 0;
+                                    node->Params[0].maxv = 2;
+                                    op.nodes.push_back(node);
+                                }
+
 
                                 if (t == L"Subtract")
                                 {
@@ -1453,6 +1630,7 @@ namespace winrt::DirectMLGraph::implementation
                                     op.nodes.push_back(node);
                                 }
 
+
                                 if (t == L"Sqrt")
                                 {
                                     auto node = std::make_shared<XLNODE_ANY>(1, TYPE_SQRT);
@@ -1460,6 +1638,27 @@ namespace winrt::DirectMLGraph::implementation
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
+
+                                if (t == L"Sign")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_SIGN);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+
+
+                                if (t == L"Threshold")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_THRESHOLD);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    node->Params.resize(1);
+                                    node->Params[0].n = L"Minimum";
+                                    node->Params[0].v = 0.0f;
+                                    op.nodes.push_back(node);
+                                }
+
 
                                 if (t == L"Xor")
                                 {
@@ -2389,6 +2588,13 @@ namespace winrt::DirectMLGraph::implementation
                             expr = (dml::Clip(mop.Item(whati[0]),it->Params[0].v, it->Params[1].v));
 
 
+                        if (it->what == TYPE_CONVOLUTION)
+                        {
+                            dml::Optional<dml::Expression> e3;
+                            if (whati.size() > 2)
+                                e3 = mop.Item(whati[2]);
+                            expr = (dml::Convolution(mop.Item(whati[0]), mop.Item(whati[1]), e3, (DML_CONVOLUTION_MODE)(int)it->Params[0].v));
+                        }
                         if (it->what == TYPE_CONSTANT)
                         {
 							auto it2 = std::dynamic_pointer_cast<XLNODE_CONSTANT>(node);
@@ -2399,6 +2605,12 @@ namespace winrt::DirectMLGraph::implementation
                             expr = (dml::Cos(mop.Item(whati[0])));
                         if (it->what == TYPE_COSH)
                             expr = (dml::Cosh(mop.Item(whati[0])));
+
+                        if (it->what == TYPE_CUMPROD)
+							expr = dml::CumulativeProduct(mop.Item(whati[0]),(uint32_t)it->Params[0].v,(DML_AXIS_DIRECTION)(int)it->Params[1].v,(bool)it->Params[2].v);
+						if (it->what == TYPE_CUMSUM)
+                            expr = dml::CumulativeSummation(mop.Item(whati[0]), (uint32_t)it->Params[0].v, (DML_AXIS_DIRECTION)(int)it->Params[1].v, (bool)it->Params[2].v);
+
 
                         if (it->what == TYPE_DIVIDE)
                             expr = (dml::Divide(mop.Item(whati[0]), mop.Item(whati[1])));
@@ -2457,12 +2669,23 @@ namespace winrt::DirectMLGraph::implementation
                         if (it->what == TYPE_POW)
                             expr = (dml::Pow(mop.Item(whati[0]),it->Params[0].v));
 
+                        if (it->what == TYPE_ROUND)
+                            expr = (dml::Round(mop.Item(whati[0]),(DML_ROUNDING_MODE)it->Params[0].v));
+
                         if (it->what == TYPE_SUBTRACT)
                             expr = (dml::Subtract(mop.Item(whati[0]), mop.Item(whati[1])));
 
                         if (it->what == TYPE_SQRT)
                             expr = (dml::Sqrt(mop.Item(whati[0])));
 
+                        if (it->what == TYPE_SIGN)
+                            expr = (dml::Sign(mop.Item(whati[0])));
+                        
+                        if (it->what == TYPE_THRESHOLD)
+                            expr = (dml::Threshold(mop.Item(whati[0]), it->Params[0].v));
+
+
+                        
 
                         Y = 1;
                     }
@@ -2494,10 +2717,14 @@ namespace winrt::DirectMLGraph::implementation
                 ml.ops.push_back(mop.Build());
             }
         }
+        //catch(std::exception& e)
         catch (...)
         {
+//            auto ce = std::current_exception();
+  //          auto tye = typeid(ce).name();
+            auto w = "Compilation error!";// e.what();
             OnClean({}, {});
-            MessageBox((HWND)wnd(), L"Compilation error!", L"", MB_ICONERROR);
+            MessageBoxA((HWND)wnd(), w, "Compile error", MB_ICONERROR);
         }
         FullRefresh();
     }

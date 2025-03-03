@@ -65,7 +65,7 @@ enum XLNODE_TYPE
     TYPE_ABS,TYPE_ACOS,TYPE_ACOSH, TYPE_ADD,TYPE_ASIN,TYPE_ASINH,TYPE_ATAN,TYPE_ATANH, TYPE_ATANYX,
 
     TYPE_BITAND,TYPE_BITCOUNT,TYPE_BITNOT,TYPE_BITOR,TYPE_BITSL,TYPE_BITSR,TYPE_BITXOR,
-    TYPE_CEIL,TYPE_CLIP, TYPE_CONSTANT,TYPE_COS, TYPE_COSH,
+	TYPE_CEIL, TYPE_CLIP, TYPE_CONSTANT, TYPE_COS, TYPE_COSH, TYPE_CONVOLUTION,TYPE_CUMSUM, TYPE_CUMPROD,
     TYPE_DIVIDE,
     TYPE_ERF,TYPE_EXP,
     TYPE_FLOOR,
@@ -75,7 +75,9 @@ enum XLNODE_TYPE
     TYPE_MAX,TYPE_MEAN,TYPE_MIN,TYPE_MULTIPLY,
     TYPE_NEGATE,
     TYPE_POW,
-    TYPE_SUBTRACT,TYPE_SQRT,
+    TYPE_ROUND,
+    TYPE_SUBTRACT,TYPE_SQRT,TYPE_SIGN,
+    TYPE_THRESHOLD,
     TYPE_OUTPUT = 999999
 };
 
@@ -102,6 +104,9 @@ inline std::map<int, std::string> TypesToNames = {
 	{TYPE_CONSTANT,"Constant"},
 	{TYPE_COS,"Cos"},
 	{TYPE_COSH,"Cosh"},
+	{TYPE_CONVOLUTION,"Convolution"},
+	{TYPE_CUMSUM,"CummulativeSum"},
+	{TYPE_CUMPROD,"CummulativeProduct"},
 	{TYPE_DIVIDE,"Divide"},
 	{TYPE_ERF,"Erf"},
 	{TYPE_EXP,"Exp"},
@@ -119,8 +124,11 @@ inline std::map<int, std::string> TypesToNames = {
     {TYPE_MULTIPLY,"Multiply"},
 	{TYPE_NEGATE,"Negate"},
     {TYPE_POW,"Pow"},
+	{TYPE_ROUND,"Round"},
     {TYPE_SUBTRACT,"Subtract"},
     {TYPE_SQRT,"Sqrt"},
+	{TYPE_SIGN,"Sign"},
+	{TYPE_THRESHOLD,"Threshold"},
 	{TYPE_OUTPUT,"Output"}
 
 };
@@ -134,7 +142,7 @@ struct XLNODE_ANY : public XLNODE
 
     virtual int ninreq() 
     {
-        if (what == TYPE_GEMM)
+        if (what == TYPE_GEMM || what == TYPE_CONVOLUTION)
             return nin() - 1;
         return nin(); 
     }
@@ -207,6 +215,12 @@ struct XLNODE_ANY : public XLNODE
             return L"Cos";
         if (what == TYPE_COSH)
             return L"Cosh";
+		if (what == TYPE_CONVOLUTION)
+			return L"Convolution";
+		if (what == TYPE_CUMSUM)
+			return L"CummulativeSum";
+		if (what == TYPE_CUMPROD)
+			return L"CummulativeProduct";
 
 		if (what == TYPE_DIVIDE)
 			return L"Divide";
@@ -253,10 +267,20 @@ struct XLNODE_ANY : public XLNODE
         if (what == TYPE_POW)
             return L"Pow";
 
+		if (what == TYPE_ROUND)
+			return L"Round";
+
 		if (what == TYPE_SUBTRACT)
 			return L"Subtract";
         if (what == TYPE_SQRT)
             return L"Sqrt";
+
+		if (what == TYPE_SIGN)
+			return L"Sign";
+
+		if (what == TYPE_THRESHOLD)
+			return L"Threshold";
+
 
         return L"Unknown";
     }
@@ -268,7 +292,6 @@ struct XLNODE_ANY : public XLNODE
         wchar_t t[1000] = {};
         if (csv_output.length())
         {
-            n += L"\r\n";
             n += csv_output;
         }
         for (auto& p : Params)
@@ -381,7 +404,7 @@ struct XLNODE_OUTPUT : public XLNODE
         std::wstring dr;
         if (csv_output.length())
             dr += csv_output;
-        return L"";
+        return dr;
     }
 
     virtual std::wstring name()
@@ -433,7 +456,7 @@ struct XLNODE_INPUT : public XLNODE
             dr += L"\r\n";
             dr += csv_input;
         }
-        return L"";
+        return dr;
     }
 
 

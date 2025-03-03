@@ -22,7 +22,7 @@ A: Abs,ACos,ACosh,Add,And,ASin,ASinh,ATan,ATanh,ATanYX
 
 B: BitAnd, BitCount, BitOr, BitNot, BitShiftLeft, BitShiftRight, BitXor
 
-C: Ceil, Clip, Constant, Cos, Cosh
+C: Ceil, Clip, Constant, Cos, Cosh, Cummulative Sum/Product, Convolution
 
 D: Divide
 
@@ -44,7 +44,11 @@ O: Or
 
 P: Pow
 
-S: Subtract, Sqrt
+R: Round
+
+S: Subtract, Sqrt, Sign
+
+T: Threshold
 
 X: Xor
 ### Pending
