@@ -5,7 +5,7 @@ A tool to visually-design DirectML operators that run in the GPU.
 
 ## Features
 
-Undo, Redo, Save, Load
+Undo, Redo, Save, Load, Multiple Sets
 
 Multiple Visible/Active DirectML operators
 
@@ -13,8 +13,11 @@ Direct2D Drawing
 
 Memory Sharing
 
-Input/Output CSV or binary
+Input/Output CSV or binary, Input Random, Output to MessageBox
 
+Adapter Selection
+
+Show Adapter Memory Consumed
 
 ## Supported Operators
 

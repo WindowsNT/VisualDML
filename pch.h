@@ -264,9 +264,22 @@ template <typename T = unsigned int>
 std::vector<T> TensorFromString(const wchar_t* str)
 {
 	std::vector<T> newSizes;
-	std::vector<std::wstring> split(const std::wstring & s, wchar_t delim);
-	auto sp = split(str, L'x');
-	for (auto& s : sp)
-		newSizes.push_back((T)std::stoi(s));
+	try
+	{
+		std::vector<std::wstring> split(const std::wstring & s, wchar_t delim);
+		auto sp = split(str, L'x');
+		for (auto& s : sp)
+			newSizes.push_back((T)std::stoi(s));
+	}
+	catch (...)
+	{
+
+	}
 	return newSizes;
+}
+
+
+inline bool Hit(float x, float y, D2D1_RECT_F rc)
+{
+	return x >= rc.left && x <= rc.right && y >= rc.top && y <= rc.bottom;
 }

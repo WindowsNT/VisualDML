@@ -22,14 +22,69 @@ struct XLNODEBULLET
     std::vector<unsigned long long> g;
 };
 
+struct VARIABLE
+{
+    std::wstring n;
+    std::wstring v;
+
+    void Ser(XML3::XMLElement& e)
+    {
+        e.vv("n").SetWideValue(n.c_str());
+        e.vv("v").SetWideValue(v.c_str());
+    }
+
+    void Unser(XML3::XMLElement& e)
+    {
+        n = e.vv("n").GetWideValue();
+        v = e.vv("v").GetWideValue();
+    }
+};
+
 struct PARAM
 {
     std::wstring n;
-    float v = 0;
-    std::wstring string_param;
+    std::wstring v;
+    std::wstring save_v;
     float minv = std::numeric_limits<float>::min();
     float maxv = std::numeric_limits<float>::max();
 	std::vector<std::wstring> list_names;  
+
+    const wchar_t* w()
+    {
+        return v.c_str();
+    }
+    operator const wchar_t* ()
+    {
+        return w();
+    }
+    operator float()
+    {
+		return std::stof(v.c_str());
+    }
+    operator double()
+    {
+		return std::stod(v.c_str());
+    }
+    operator int()
+    {
+        return std::stoi(v.c_str());
+    }
+    operator unsigned int()
+    {
+        return std::stoul(v.c_str());
+    }
+    operator bool()
+	{
+		return std::stoi(v.c_str()) == 1;
+	}
+    operator long long()
+    {
+		return std::stoll(v.c_str());
+    }
+    operator unsigned long long()
+    {
+        return std::stoull(v.c_str());
+    }
 };
 
 struct XLNODE
@@ -355,22 +410,22 @@ struct XLNODE_ANY : public XLNODE
         }
         for (auto& p : Params)
         {
-            if (p.list_names.size() && (size_t)p.v < p.list_names.size())
+            if (p.list_names.size() && (int)p < p.list_names.size())
             {
-                swprintf_s(t, 1000, L"\r\n%s: %s", p.n.c_str(), p.list_names[(size_t)p.v].c_str());
+                swprintf_s(t, 1000, L"\r\n%s: %s", p.n.c_str(), p.list_names[p].c_str());
             }
             else
             if (p.minv <= -1 && p.maxv <= -1)
             {
-                swprintf_s(t, 1000, L"\r\n%s: %s", p.n.c_str(), p.string_param.c_str());
+                swprintf_s(t, 1000, L"\r\n%s: %s", p.n.c_str(), p.w());
             }
             else
             if (p.minv == 0 && p.maxv == 1)
             {
-                swprintf_s(t, 1000, L"\r\n%s: %s", p.n.c_str(), p.v == 1 ? L"True" : L"False");
+                swprintf_s(t, 1000, L"\r\n%s: %s", p.n.c_str(), p  ? L"True" : L"False");
             }
             else
-                swprintf_s(t, 1000, L"\r\n%s: %.2f", p.n.c_str(), p.v);
+                swprintf_s(t, 1000, L"\r\n%s: %.2f", p.n.c_str(), (float)p);
             n += t;
         }
         return n;
@@ -399,7 +454,7 @@ struct XLNODE_ANY : public XLNODE
 		{
 			auto& pe = ee["Params"].AddElement("Param");
 			pe.vv("Name").SetWideValue(p.n.c_str());
-            pe.vv("Value").SetValueFloat(p.v);
+            pe.vv("Value").SetWideValue(p.w());
             pe.vv("Min").SetValueFloat(p.minv);
             pe.vv("Max").SetValueFloat(p.maxv);
 			for (auto& s : p.list_names)
@@ -415,7 +470,7 @@ struct XLNODE_ANY : public XLNODE
         {
             PARAM p;
 			p.n = pe.vv("Name").GetWideValue();
-			p.v = pe.vv("Value").GetValueFloat();
+			p.v = pe.vv("Value").GetWideValue();
 			p.minv = pe.vv("Min").GetValueFloat(std::numeric_limits<float>::min());
 			p.maxv = pe.vv("Max").GetValueFloat(std::numeric_limits<float>::max());
 			for (auto& le : pe["list"])
@@ -433,7 +488,11 @@ struct XLNODE_CONSTANT : public XLNODE_ANY
 
     XLNODE_CONSTANT() : XLNODE_ANY(0, TYPE_CONSTANT)
     {
-        Params.push_back({ L"Value",0 });
+        PARAM p;
+        p.n = L"Value";
+        p.minv = -1;
+		p.maxv = -1;
+		Params.push_back(p);
     }
     std::vector<unsigned int> tensor_dims;
 
@@ -593,7 +652,7 @@ struct XLOP : public XLNODE
 		ee.vv("Zoom").SetValueFloat(Zoom);
 		for (auto& n : nodes)
 		{
-			auto& ne = ee.AddElement("Node");
+			auto& ne = ee["Nodes"].AddElement("Node");
 			n->Ser(ne);
 		}
     }
@@ -652,9 +711,9 @@ struct XLOP : public XLNODE
 	virtual void Unser(XML3::XMLElement& e)
 	{
         nodes.clear();
-		for (size_t i = 0; i < e.GetChildrenNum(); i++)
+		for (size_t i = 0; i < e["Nodes"].GetChildrenNum(); i++)
 		{
-			auto& ne = e.GetChildren()[i];
+			auto& ne = e["Nodes"].GetChildren()[i];
 			auto n = Unser2(*ne);
 			nodes.push_back(n);
 		}
@@ -665,24 +724,35 @@ struct XLOP : public XLNODE
 
 struct XL : public XLNODE
 {
+    std::wstring n;
     std::vector<XLOP> ops;
+    std::vector<VARIABLE> variables;
     virtual std::wstring name() { return L"DML"; }
     virtual std::wstring subname() { return L""; }
 
     virtual void Ser(XML3::XMLElement& ee)
     {
+		ee.vv("n").SetWideValue(n.c_str());
 		for (auto& op : ops)
 		{
-			auto& oe = ee.AddElement("Operator");
+			auto& oe = ee["Operators"].AddElement("Operator");
 			op.Ser(oe);
 		}
+
+        for (auto& v : variables)
+        {
+            auto& nv = ee["Variables"].AddElement("Variable");
+            v.Ser(nv);
+        }
+
     }
     virtual void Unser(XML3::XMLElement& e)
     {
+		n = e.vv("n").GetWideValue();
         ops.clear();
-        for (size_t i = 0; i < e.GetChildrenNum(); i++)
+        for (size_t i = 0; i < e["Operators"].GetChildrenNum(); i++)
         {
-            auto& oe = e.GetChildren()[i];
+            auto& oe = e["Operators"].GetChildren()[i];
             XLOP op;
             op.Unser(*oe);
             ops.push_back(op);
@@ -690,22 +760,67 @@ struct XL : public XLNODE
 
 		for (auto& op : ops)
 		{
-			for (auto& n : op.nodes)
+			for (auto& no : op.nodes)
 			{
-				for (auto& c : n->children)
+				for (auto& c : no->children)
 				{
                     for(auto& gg : c.g)
-                        nnn = std::max((unsigned long long)abs(n->ShareMemory),std::max(nnn + 1,gg + 1));
+                        nnn = std::max((unsigned long long)abs(no->ShareMemory),std::max(nnn + 1,gg + 1));
 				}
 			}
 		}
+
+        variables.clear();
+        for (auto& ve : e["Variables"])
+        {
+            VARIABLE v;
+            v.Unser(ve);
+            variables.push_back(v);
+        }
+
     }
 };
 
-inline bool Hit(float x, float y, D2D1_RECT_F rc)
+struct PROJECT
 {
-	return x >= rc.left && x <= rc.right && y >= rc.top && y <= rc.bottom;
-}
+	std::vector<XL> xls;
+    size_t iActive = 0;
+    XL& xl()
+    {
+        if (xls.empty())
+        {
+            xls.push_back(XL());
+            return xls[0];
+        }
+		if (iActive < xls.size())
+			return xls[iActive]; 
+        return xls[0];
+    }
+
+	void Ser(XML3::XMLElement& e)
+	{
+		for (auto& xl : xls)
+		{
+			auto& xe = e["Pages"].AddElement("Page");
+			xl.Ser(xe);
+		}
+	}
+
+	void Unser(XML3::XMLElement& e)
+	{
+		xls.clear();
+		for (size_t i = 0; i < e["Pages"].GetChildrenNum(); i++)
+		{
+			auto& xe = e["Pages"].GetChildren()[i];
+			XL xl;
+			xl.Unser(*xe);
+			xls.push_back(xl);
+		}
+	}
+};
+
+
+
 
 namespace winrt::DirectMLGraph::implementation
 {
@@ -725,15 +840,14 @@ namespace winrt::DirectMLGraph::implementation
         void FullRefresh();
 
         ML ml;
-        XL xl;
+        PROJECT prj;
+//        XL xl;
         std::stack<XML3::XMLElement> undo_list;
         std::stack<XML3::XMLElement> redo_list;
         size_t ActiveOperator2 = (size_t)-1;
         std::shared_ptr<D2D> d2d;
         MLGraph()
         {
-            // Xaml objects should not call InitializeComponent during construction.
-            // See https://github.com/microsoft/cppwinrt/tree/master/nuget#initializecomponent
         }
 
 
@@ -796,6 +910,9 @@ namespace winrt::DirectMLGraph::implementation
         void OnCompile(IInspectable const&, IInspectable const&);
         void OnRun(IInspectable const&, IInspectable const&);
         void OnAddOp(IInspectable const&, IInspectable const&);
+        void OnAddSet(IInspectable const&, IInspectable const&);
+        void Tip(const wchar_t*);
+        void OnAddVariable(IInspectable const&, IInspectable const&);
         void OnAddInput(IInspectable const&, IInspectable const&);
         void OnAddConstant(IInspectable const&, IInspectable const&);
         void OnAddOutput(IInspectable const&, IInspectable const&);

@@ -106,6 +106,38 @@
             <MenuBarItem Title="Adapter"  x:Name="AdapterMenu">
             </MenuBarItem>
 
+            <MenuBarItem Title="Set" >
+                <MenuFlyoutItem Text="Add new" Click="OnAddSet" >
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE710;"/>
+                    </MenuFlyoutItem.Icon>
+                    <MenuFlyoutItem.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="N" Modifiers="Shift"/>
+                    </MenuFlyoutItem.KeyboardAccelerators>
+                </MenuFlyoutItem>
+                <MenuFlyoutSeparator/>
+                <MenuFlyoutSubItem x:Name="EditSetSubmenu" Text="Switch to set" />
+                <MenuFlyoutSubItem x:Name="DeleteSetSubmenu" Text="Remove set" />
+
+            </MenuBarItem>
+
+
+            <MenuBarItem Title="Variable" >
+                <MenuFlyoutItem Text="Add" Click="OnAddVariable" >
+                    <MenuFlyoutItem.Icon>
+                        <FontIcon Glyph="&#xE710;"/>
+                    </MenuFlyoutItem.Icon>
+                    <MenuFlyoutItem.KeyboardAccelerators>
+                        <KeyboardAccelerator Key="V" Modifiers="Shift"/>
+                    </MenuFlyoutItem.KeyboardAccelerators>
+                </MenuFlyoutItem>
+                <MenuFlyoutSeparator/>
+                <MenuFlyoutSubItem x:Name="EditVariableSubmenu" Text="Edit variable" />
+                <MenuFlyoutSubItem x:Name="DeleteVariableSubmenu" Text="Remove variable" />
+
+            </MenuBarItem>
+
+
             <MenuBarItem Title="Operator" >
                 <MenuFlyoutItem Text="Add" Click="OnAddOp" >
                     <MenuFlyoutItem.Icon>
