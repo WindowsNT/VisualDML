@@ -164,8 +164,8 @@ struct D2D
 	HRESULT Resize(int wi, int he);
 	HRESULT Resize2(int wi, int he);
 
-	bool CreateD2(HWND hh, D3D_DRIVER_TYPE de = D3D_DRIVER_TYPE_WARP, int wi = 0, int he = 0, bool IncreaseTiles = 0, int forwhat = 0, int hdr_if = 0, int SwapChainForWUI3 = 0);
-	bool CreateD2X(HWND hh, int wi, int he, bool IncreaseTiles, int forwhat, int hdr_if = 0, int SwapChainForWUI3 = 0);
+	bool CreateD2(IDXGIAdapter* wad, HWND hh, D3D_DRIVER_TYPE de = D3D_DRIVER_TYPE_HARDWARE, int wi = 0, int he = 0, bool IncreaseTiles = 0, int forwhat = 0, int hdr_if = 0, int SwapChainForWUI3 = 0);
+	bool CreateD2X(IDXGIAdapter* wad, HWND hh, int wi, int he, bool IncreaseTiles, int forwhat, int hdr_if = 0, int SwapChainForWUI3 = 0);
 	int OnResize(HWND hh, bool RR, int wi = 0, int he = 0);
 
 
@@ -207,11 +207,11 @@ struct D2D
 
 
 
-inline bool D2D::CreateD2X(HWND hh, int wi, int he, bool IncreaseTiles, int forwhat, int hdr_if, int SwapChainForWUI3x)
+inline bool D2D::CreateD2X(IDXGIAdapter* wad, HWND hh, int wi, int he, bool IncreaseTiles, int forwhat, int hdr_if, int SwapChainForWUI3x)
 {
-    CreateD2(hh, D3D_DRIVER_TYPE_HARDWARE, wi, he, IncreaseTiles, forwhat, hdr_if, SwapChainForWUI3x);
+    CreateD2(wad,hh, D3D_DRIVER_TYPE_HARDWARE, wi, he, IncreaseTiles, forwhat, hdr_if, SwapChainForWUI3x);
     if (!m_d2dContext)
-        CreateD2(hh, D3D_DRIVER_TYPE_WARP, wi, he, IncreaseTiles, forwhat, hdr_if, SwapChainForWUI3x);
+        CreateD2(wad,hh, D3D_DRIVER_TYPE_WARP, wi, he, IncreaseTiles, forwhat, hdr_if, SwapChainForWUI3x);
     if (!m_d2dContext)
         return false;
     return true;
@@ -252,9 +252,11 @@ inline void D2D::Off(bool)
     backBuffer = 0; dxgiBackBuffer = 0;
 }
 
-inline bool D2D::CreateD2(HWND hh, D3D_DRIVER_TYPE de, int wi, int he, bool IncreaseTiles, [[maybe_unused]] int forwhat, int  hdr_if, int SwapChainForWUI3x)
+inline bool D2D::CreateD2(IDXGIAdapter* wad, HWND hh, D3D_DRIVER_TYPE de, int wi, int he, bool IncreaseTiles, [[maybe_unused]] int forwhat, int  hdr_if, int SwapChainForWUI3x)
 {
     this->SwapChainForWUI3 = SwapChainForWUI3x;
+    if (wad)
+		de = D3D_DRIVER_TYPE_UNKNOWN;
 
     try
     {
@@ -270,10 +272,9 @@ inline bool D2D::CreateD2(HWND hh, D3D_DRIVER_TYPE de, int wi, int he, bool Incr
         SizeCreated.cy = he;
         D3D_FEATURE_LEVEL featureLevels[] =
         {
-            /*            D3D_FEATURE_LEVEL_12_2,
+                        D3D_FEATURE_LEVEL_12_2,
                         D3D_FEATURE_LEVEL_12_1,
                         D3D_FEATURE_LEVEL_12_0,
-             */
                         D3D_FEATURE_LEVEL_11_1,
                         D3D_FEATURE_LEVEL_11_0,
                         D3D_FEATURE_LEVEL_10_1,
@@ -286,11 +287,8 @@ inline bool D2D::CreateD2(HWND hh, D3D_DRIVER_TYPE de, int wi, int he, bool Incr
 
         UINT flags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
         //        flags |= D3D11_CREATE_DEVICE_VIDEO_SUPPORT;
-#ifdef _DEBUG
-//        #define DEBUGD3D
-#endif
 
-#ifdef DEBUGD3D
+#ifdef DEBUG
         flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
         HRESULT hr = S_OK;
@@ -299,7 +297,7 @@ inline bool D2D::CreateD2(HWND hh, D3D_DRIVER_TYPE de, int wi, int he, bool Incr
             dd.context = 0;
             dd.device = 0;
             hr = D3D11CreateDevice(
-                nullptr,                    // specify null to use the default adapter
+                wad,
                 de,
                 0,
                 flags,              // optionally set debug and Direct2D compatibility flags
@@ -682,25 +680,6 @@ inline bool D2D::CreateRenderingBitmap(RECT rc)
         return false;
 
     return true;
-}
-
-inline bool D2D::CreateIf(HWND hh, RECT rc, bool w7, int SwapChainForWUI3X)
-{
-    CreateWriteFa();
-    if (!WriteFa)
-        return false;
-
-    if (rt())
-        return true;
-
-
-    if (!w7)
-    {
-        if (CreateD2(hh, D3D_DRIVER_TYPE_HARDWARE, rc.right, rc.bottom, true, 0, MainHDR, SwapChainForWUI3X))
-            return true;
-        Off();
-    }
-    return CreateWin7(hh, rc);
 }
 
 

@@ -102,6 +102,10 @@
                 </MenuFlyoutItem>
             </MenuBarItem>
 
+
+            <MenuBarItem Title="Adapter"  x:Name="AdapterMenu">
+            </MenuBarItem>
+
             <MenuBarItem Title="Operator" >
                 <MenuFlyoutItem Text="Add" Click="OnAddOp" >
                     <MenuFlyoutItem.Icon>

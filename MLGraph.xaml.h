@@ -26,8 +26,10 @@ struct PARAM
 {
     std::wstring n;
     float v = 0;
+    std::wstring string_param;
     float minv = std::numeric_limits<float>::min();
     float maxv = std::numeric_limits<float>::max();
+	std::vector<std::wstring> list_names;  
 };
 
 struct XLNODE
@@ -79,14 +81,15 @@ enum XLNODE_TYPE
     TYPE_DIVIDE,
     TYPE_ERF,TYPE_EXP,TYPE_EQUALS,
     TYPE_FLOOR,
-    TYPE_GEMM,
-    TYPE_IDENTITY,TYPE_IF,
-	TYPE_LAND, TYPE_LOR, TYPE_LXOR,TYPE_LNOT,TYPE_LOG,
+	TYPE_GEMM, TYPE_GREATERTHAN, TYPE_GREATERTHANOREQUAL,
+    TYPE_IDENTITY,TYPE_IF,TYPE_ISINFINITY,TYPE_ISNAN,
+    TYPE_JOIN,
+	TYPE_LAND, TYPE_LOR, TYPE_LXOR, TYPE_LNOT, TYPE_LOG, TYPE_LESSTHAN, TYPE_LESSTHANOREQUAL,
     TYPE_MAX,TYPE_MEAN,TYPE_MIN,TYPE_MULTIPLY,
     TYPE_NEGATE,
     TYPE_POW,
-    TYPE_ROUND,
-    TYPE_SUBTRACT,TYPE_SQRT,TYPE_SIGN,
+    TYPE_REINTERPRET,TYPE_ROUND,
+    TYPE_SLICE,TYPE_SUBTRACT,TYPE_SQRT,TYPE_SIGN,
     TYPE_THRESHOLD,
     TYPE_OUTPUT = 999999
 };
@@ -124,20 +127,29 @@ inline std::map<int, std::string> TypesToNames = {
 	{TYPE_EQUALS,"Equals"},
 	{TYPE_FLOOR,"Floor"},
 	{TYPE_GEMM,"Gemm"},
+	{TYPE_GREATERTHAN,"GreaterThan"},
+	{TYPE_GREATERTHANOREQUAL,"GreaterThanOrEqual"},
 	{TYPE_IDENTITY,"Identity"},
 	{TYPE_IF,"If"},
+	{TYPE_ISINFINITY,"IsInfinity"},
+	{TYPE_ISNAN,"IsNan"},
+	{TYPE_JOIN,"Join"},
 	{TYPE_LAND,"And"},
 	{TYPE_LOR,"Or"},
 	{TYPE_LXOR,"Xor"},
     {TYPE_LNOT,"Not"},
     {TYPE_LOG,"Log"},
+	{TYPE_LESSTHAN,"LessThan"},
+	{TYPE_LESSTHANOREQUAL,"LessThanOrEqual"},
     {TYPE_MAX,"Max"},
     {TYPE_MEAN,"Mean"},
     {TYPE_MIN,"Min"},
     {TYPE_MULTIPLY,"Multiply"},
 	{TYPE_NEGATE,"Negate"},
     {TYPE_POW,"Pow"},
+	{TYPE_REINTERPRET,"Reinterpret"},
 	{TYPE_ROUND,"Round"},
+	{TYPE_SLICE,"Slice"},
     {TYPE_SUBTRACT,"Subtract"},
     {TYPE_SQRT,"Sqrt"},
 	{TYPE_SIGN,"Sign"},
@@ -153,7 +165,7 @@ struct XLNODE_ANY : public XLNODE
     int howi = 0;
 
     virtual bool AsksType() {
-        if (what == TYPE_CAST)
+        if (what == TYPE_CAST || what == TYPE_LESSTHAN || what == TYPE_LESSTHANOREQUAL || what == TYPE_GREATERTHAN || what == TYPE_GREATERTHANOREQUAL || what == TYPE_REINTERPRET || what == TYPE_ISINFINITY || what == TYPE_ISNAN)
             return true;
         return false;
     }
@@ -164,6 +176,8 @@ struct XLNODE_ANY : public XLNODE
     {
         if (what == TYPE_GEMM || what == TYPE_CONVOLUTION)
             return nin() - 1;
+        if (what == TYPE_JOIN)
+            return 1;
         return nin(); 
     }
     virtual int nin() { return howi; }
@@ -259,11 +273,22 @@ struct XLNODE_ANY : public XLNODE
 
 		if (what == TYPE_GEMM)
 			return L"Gemm";
+		if (what == TYPE_GREATERTHAN)
+			return L"GreaterThan";
+		if (what == TYPE_GREATERTHANOREQUAL)
+			return L"GreaterThanOrEqual";
 
 		if (what == TYPE_IDENTITY)
 			return L"Identity";
 		if (what == TYPE_IF)
 			return L"If";
+		if (what == TYPE_ISINFINITY)
+			return L"IsInfinity";
+		if (what == TYPE_ISNAN)
+			return L"IsNan";
+
+		if (what == TYPE_JOIN)
+			return L"Join";
 
         if (what == TYPE_LAND)
             return L"And";
@@ -273,9 +298,13 @@ struct XLNODE_ANY : public XLNODE
             return L"Xor";
         if (what == TYPE_LNOT)
             return L"Not";
-
         if (what == TYPE_LOG)
             return L"Log";
+		if (what == TYPE_LESSTHAN)
+			return L"LessThan";
+		if (what == TYPE_LESSTHANOREQUAL)
+			return L"LessThanOrEqual";
+
 
         if (what == TYPE_MAX)
             return L"Max";
@@ -293,9 +322,13 @@ struct XLNODE_ANY : public XLNODE
         if (what == TYPE_POW)
             return L"Pow";
 
+		if (what == TYPE_REINTERPRET)
+			return L"Reinterpret";
 		if (what == TYPE_ROUND)
 			return L"Round";
 
+		if (what == TYPE_SLICE)
+			return L"Slice";
 		if (what == TYPE_SUBTRACT)
 			return L"Subtract";
         if (what == TYPE_SQRT)
@@ -322,6 +355,16 @@ struct XLNODE_ANY : public XLNODE
         }
         for (auto& p : Params)
         {
+            if (p.list_names.size() && (size_t)p.v < p.list_names.size())
+            {
+                swprintf_s(t, 1000, L"\r\n%s: %s", p.n.c_str(), p.list_names[(size_t)p.v].c_str());
+            }
+            else
+            if (p.minv <= -1 && p.maxv <= -1)
+            {
+                swprintf_s(t, 1000, L"\r\n%s: %s", p.n.c_str(), p.string_param.c_str());
+            }
+            else
             if (p.minv == 0 && p.maxv == 1)
             {
                 swprintf_s(t, 1000, L"\r\n%s: %s", p.n.c_str(), p.v == 1 ? L"True" : L"False");
@@ -359,6 +402,8 @@ struct XLNODE_ANY : public XLNODE
             pe.vv("Value").SetValueFloat(p.v);
             pe.vv("Min").SetValueFloat(p.minv);
             pe.vv("Max").SetValueFloat(p.maxv);
+			for (auto& s : p.list_names)
+				pe["list"].AddElement("l").vv("n").SetWideValue(s.c_str());
 		}
     }
 
@@ -373,6 +418,8 @@ struct XLNODE_ANY : public XLNODE
 			p.v = pe.vv("Value").GetValueFloat();
 			p.minv = pe.vv("Min").GetValueFloat(std::numeric_limits<float>::min());
 			p.maxv = pe.vv("Max").GetValueFloat(std::numeric_limits<float>::max());
+			for (auto& le : pe["list"])
+				p.list_names.push_back(le.vv("n").GetWideValue());
 			Params.push_back(p);
         }
     }
@@ -762,6 +809,12 @@ namespace winrt::DirectMLGraph::implementation
         std::wstring current_file;
         void Paint();
         void Resize();
+        void LoadAdapters();
+
+        DXGI_QUERY_VIDEO_MEMORY_INFO vmi = {};
+        DXGI_ADAPTER_DESC1 vdesc = {};
+        void UpdateVideoMemory();
+
     };
 }
 

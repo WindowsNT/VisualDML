@@ -10,7 +10,7 @@
 				<Dimension Size="10"/>
 			</Dimensions>
 		</Node>
-		<Node xx="299.442383" yy="38.968750" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="0" Type="21" Name="Constant">
+		<Node xx="274.442383" yy="80.968750" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="0" Type="21" Name="Constant">
 			<Children>
 				<Child idx="0" io="1" u="34"/>
 			</Children>
@@ -34,6 +34,21 @@
 				<Child idx="0" io="0" u="17"/>
 			</Children>
 		</Node>
+		<Node xx="1161.861084" yy="632.968750" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="1" Type="37" Name="IsInfinity">
+			<Children>
+				<Child idx="0" io="0" u=""/>
+				<Child idx="0" io="1" u=""/>
+			</Children>
+			<Params>
+				<Param Name="Mode" Value="0.000000" Min="0.000000" Max="2.000000">
+					<list>
+						<l n="Either"/>
+						<l n="Positive Infinity"/>
+						<l n="Negative Infinity"/>
+					</list>
+				</Param>
+			</Params>
+		</Node>
 	</Operator>
 	<Operator DataType="1" Zoom="1.000000">
 		<Node Name="Input" xx="514.774658" yy="372.722656" CSV="" CSVI="" bf="0" sm="-45" optype="1" Type="1">
@@ -45,13 +60,13 @@
 				<Dimension Size="10"/>
 			</Dimensions>
 		</Node>
-		<Node xx="733.000000" yy="398.107422" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="1" Type="33" Name="Identity">
+		<Node xx="733.000000" yy="398.107422" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="1" Type="35" Name="Identity">
 			<Children>
 				<Child idx="0" io="0" u="30"/>
 				<Child idx="0" io="1" u="135"/>
 			</Children>
 		</Node>
-		<Node xx="881.648438" yy="370.599609" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="1" Type="45" Name="Pow">
+		<Node xx="881.648438" yy="370.599609" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="1" Type="52" Name="Pow">
 			<Children>
 				<Child idx="0" io="0" u="135"/>
 				<Child idx="0" io="1" u="136"/>

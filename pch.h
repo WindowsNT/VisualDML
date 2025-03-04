@@ -257,3 +257,16 @@ bool PutFile(const wchar_t* f, std::vector<T>& d, bool Fw = true)
 	return true;
 }
 
+inline std::shared_ptr<XML3::XML> Settings;
+inline const wchar_t* ttitle = L"DirectML Graph Editor";
+
+template <typename T = unsigned int>
+std::vector<T> TensorFromString(const wchar_t* str)
+{
+	std::vector<T> newSizes;
+	std::vector<std::wstring> split(const std::wstring & s, wchar_t delim);
+	auto sp = split(str, L'x');
+	for (auto& s : sp)
+		newSizes.push_back((T)std::stoi(s));
+	return newSizes;
+}

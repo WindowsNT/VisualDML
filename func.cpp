@@ -113,3 +113,4 @@ void CsvToBinary(const wchar_t* csv, const wchar_t* binout)
     }
 	CloseHandle(hF);
 }
+

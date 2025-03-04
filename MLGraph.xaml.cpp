@@ -355,6 +355,28 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildNodeRightMenu(std::shared_
     {
         for (size_t i = 0; i < nd->Params.size(); i++)
         {
+            if (nd->Params[i].list_names.size())
+            {
+                winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubItem A;
+                A.Text(nd->Params[i].n.c_str());
+
+                for (size_t ii = 0; ii < nd->Params[i].list_names.size(); ii++)
+                {
+                    winrt::Microsoft::UI::Xaml::Controls::ToggleMenuFlyoutItem O;
+                    O.Text(nd->Params[i].list_names[ii].c_str());
+                    ULARGE_INTEGER ul = {};
+					ul.LowPart = (int)i + 2000;
+					ul.HighPart = (int)ii + 1;
+                    O.Tag(winrt::box_value(ul.QuadPart));
+                    O.Click(fooo);
+                    if ((size_t)nd->Params[i].v == ii)
+                        O.IsChecked(true);
+                    A.Items().Append(O);
+
+                }
+                r1.Items().Append(A);
+            }
+            else
             if (nd->Params[i].minv == 0 && nd->Params[i].maxv == 1)
             {
                 winrt::Microsoft::UI::Xaml::Controls::ToggleMenuFlyoutItem O;
@@ -412,7 +434,7 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildNodeRightMenu(std::shared_
             winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSeparator s;
             r1.Items().Append(s);
         }
-		winrt::Microsoft::UI::Xaml::Controls::ToggleMenuFlyoutItem O1; O1.Text(L"Buffer Visible"); O1.Click(fooo); O1.IsChecked(nd->BufferVisible);
+		winrt::Microsoft::UI::Xaml::Controls::ToggleMenuFlyoutItem O1; O1.Text(L"Visible Buffer"); O1.Click(fooo); O1.IsChecked(nd->BufferVisible);
         r1.Items().Append(O1);
     }
 
@@ -583,6 +605,7 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
 
         r1.Items().Append(A);
     }
+
     if (1)
     {
         winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubItem A;
@@ -623,9 +646,22 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
     {
         winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubItem A;
         A.Text(L"G");
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Gemm"); Neg.Click(fooo);
+            A.Items().Append(Neg);
+        }
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem N; N.Text(L"GreaterThan"); N.Click(fooo);
+            A.Items().Append(N);
+        }
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem N; N.Text(L"GreaterThanOrEqual"); N.Click(fooo);
+            A.Items().Append(N);
+        }
 
-        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Gemm"); Neg.Click(fooo);
-        A.Items().Append(Neg);
 
         r1.Items().Append(A);
     }
@@ -647,6 +683,31 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
             winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem N; N.Text(L"If"); N.Click(fooo);
             A.Items().Append(N);
         }
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem N; N.Text(L"IsInfinity"); N.Click(fooo);
+            A.Items().Append(N);
+        }
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem N; N.Text(L"IsNan"); N.Click(fooo);
+            A.Items().Append(N);
+        }
+
+
+        r1.Items().Append(A);
+    }
+
+    if (1)
+    {
+        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubItem A;
+        A.Text(L"J");
+
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Join"); Neg.Click(fooo);
+            A.Items().Append(Neg);
+        }
 
 
         r1.Items().Append(A);
@@ -662,6 +723,17 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
             winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Log"); Neg.Click(fooo);
             A.Items().Append(Neg);
         }
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem N; N.Text(L"LessThan"); N.Click(fooo);
+            A.Items().Append(N);
+        }
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem N; N.Text(L"LessThanOrEqual"); N.Click(fooo);
+            A.Items().Append(N);
+        }
+
         r1.Items().Append(A);
     }
 
@@ -746,9 +818,17 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
         winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutSubItem A;
         A.Text(L"R");
 
-        winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Round"); Neg.Click(fooo);
-        A.Items().Append(Neg);
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Reinterpret"); Neg.Click(fooo);
+            A.Items().Append(Neg);
+        }
 
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Round"); Neg.Click(fooo);
+            A.Items().Append(Neg);
+        }
         r1.Items().Append(A);
     }
 
@@ -761,6 +841,11 @@ winrt::Microsoft::UI::Xaml::Controls::MenuFlyout BuildTensorMenu(std::function<v
         if (1)
         {
             winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Sign"); Neg.Click(fooo);
+            A.Items().Append(Neg);
+        }
+        if (1)
+        {
+            winrt::Microsoft::UI::Xaml::Controls::MenuFlyoutItem Neg; Neg.Text(L"Slice"); Neg.Click(fooo);
             A.Items().Append(Neg);
         }
         if (1)
@@ -1170,6 +1255,17 @@ namespace winrt::DirectMLGraph::implementation
                                         {
                                             // unbox it
 											auto i3 = winrt::unbox_value<size_t>(tag);
+                                            if (i3 >= 0x100000000)
+                                            {
+                                                ULARGE_INTEGER ul;
+												ul.QuadPart = i3;
+                                                auto low = ul.LowPart;
+                                                auto pidx = low - 2000;
+                                                auto high = ul.HighPart - 1;
+                                                nod->Params[pidx].v = (float)high;
+                                                FullRefresh();
+                                            }
+                                            else
                                             if (i3 >= 2000)
                                             {
                                                 auto pidx = i3 - 2000;
@@ -1182,9 +1278,30 @@ namespace winrt::DirectMLGraph::implementation
 													FullRefresh();
                                                 }
                                                 else
+                                                if (nod->Params[pidx].minv <= -1 && nod->Params[pidx].maxv <=  -1) 
                                                 {
                                                     WhatInput = 2;
                                                     _i0 = nod->Params[pidx].n;
+                                                    _i1 = nod->Params[pidx].string_param;
+                                                    WhatParam = &nod->Params[pidx];
+                                                    Refresh({ L"i1",L"i0" });
+                                                    auto sp = Content().as<Panel>();
+                                                    auto ct = sp.FindName(L"Input1").as<ContentDialog>();
+                                                    ct.ShowAsync();
+
+                                                }
+                                                else
+                                                {
+                                                    WhatInput = 2;
+                                                    _i0 = nod->Params[pidx].n;
+                                                    if (nod->Params[pidx].minv != std::numeric_limits<float>::min() && nod->Params[pidx].maxv != std::numeric_limits<float>::max())
+                                                    {
+                                                        _i0  += L" (";
+														_i0 += std::to_wstring(nod->Params[pidx].minv);
+														_i0 += L" - ";
+														_i0 += std::to_wstring(nod->Params[pidx].maxv);
+														_i0 += L")";
+                                                    }
                                                     _i1 = std::to_wstring(nod->Params[pidx].v);
                                                     WhatParam = &nod->Params[pidx];
                                                     Refresh({ L"i1",L"i0" });
@@ -1248,7 +1365,7 @@ namespace winrt::DirectMLGraph::implementation
                                             it->csv_input = fnx.data();
                                             FullRefresh();
                                         }
-                                        if (t == L"Buffer Visible")
+                                        if (t == L"Visible Buffer")
                                         {
 											nod->BufferVisible = !nod->BufferVisible;
 											nod->ShareMemory = 0;
@@ -1492,10 +1609,11 @@ namespace winrt::DirectMLGraph::implementation
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     node->Params.resize(1);
-                                    node->Params[0].n = L"Cross";
+                                    node->Params[0].n = L"Mode";
                                     node->Params[0].v = 0.0f;
                                     node->Params[0].minv = 0;
                                     node->Params[0].maxv = 1;
+                                    node->Params[0].list_names = { L"No Cross",L"Cross" };
                                     op.nodes.push_back(node);
                                 }
                                 if (t == L"CummulativeSum")
@@ -1594,6 +1712,21 @@ namespace winrt::DirectMLGraph::implementation
                                     node->Params[3].v = 0.0f;
                                     op.nodes.push_back(node);
                                 }
+                                if (t == L"GreaterThan")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(2, TYPE_GREATERTHAN);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+                                if (t == L"GreaterThanOrEqual")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(2, TYPE_GREATERTHANOREQUAL);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+
                                 if (t == L"Identity")
                                 {
                                     auto node = std::make_shared<XLNODE_ANY>(1, TYPE_IDENTITY);
@@ -1601,6 +1734,42 @@ namespace winrt::DirectMLGraph::implementation
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
+
+                                if (t == L"IsInfinity")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_ISINFINITY);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    node->Params.resize(1);
+                                    node->Params[0].n = L"Mode";
+                                    node->Params[0].v = 0.0f;
+                                    node->Params[0].minv = 0;
+                                    node->Params[0].maxv = 2;
+									node->Params[0].list_names = { L"Either",L"Positive Infinity",L"Negative Infinity" };
+                                    op.nodes.push_back(node);
+                                }
+                                if (t == L"IsNan")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_ISNAN);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+
+
+                                if (t == L"Join")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(10, TYPE_JOIN);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    node->Params.resize(1);
+                                    node->Params[0].n = L"Axis";
+                                    node->Params[0].v = 0.0f;
+                                    node->Params[0].minv = 0;
+                                    node->Params[0].maxv = 100;
+                                    op.nodes.push_back(node);
+                                }
+
                                 if (t == L"If")
                                 {
                                     auto node = std::make_shared<XLNODE_ANY>(3, TYPE_IF);
@@ -1612,6 +1781,21 @@ namespace winrt::DirectMLGraph::implementation
                                 if (t == L"Log")
                                 {
                                     auto node = std::make_shared<XLNODE_ANY>(1, TYPE_LOG);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+
+                                if (t == L"LessThan")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(2, TYPE_LESSTHAN);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    op.nodes.push_back(node);
+                                }
+                                if (t == L"LessThanOrEqual")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(2, TYPE_LESSTHANOREQUAL);
                                     node->hit.left = pos.X;
                                     node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
@@ -1693,6 +1877,45 @@ namespace winrt::DirectMLGraph::implementation
                                     node->Params[0].v = 0.0f;
                                     node->Params[0].minv = 0;
                                     node->Params[0].maxv = 2;
+                                    op.nodes.push_back(node);
+                                }
+
+                                if (t == L"Reinterpret")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_REINTERPRET);
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
+                                    node->Params.resize(1);
+                                    node->Params[0].n = L"New Size";
+                                    node->Params[0].v = 0.0f;
+                                    node->Params[0].minv = -1;
+                                    node->Params[0].maxv = -1;
+                                    node->Params[0].string_param = L"1x1";
+                                    op.nodes.push_back(node);
+                                }
+
+                                if (t == L"Slice")
+                                {
+                                    auto node = std::make_shared<XLNODE_ANY>(1, TYPE_SLICE);
+                                    node->Params.resize(3);
+                                    node->Params[0].n = L"Offsets";
+                                    node->Params[0].v = 0.0f;
+                                    node->Params[0].minv = -1;
+                                    node->Params[0].maxv = -1;
+                                    node->Params[0].string_param = L"1x1";
+                                    node->Params[1].n = L"Sizes";
+                                    node->Params[1].v = 0.0f;
+                                    node->Params[1].minv = -1;
+                                    node->Params[1].maxv = -1;
+                                    node->Params[1].string_param = L"1x1";
+                                    node->Params[2].n = L"Strides";
+                                    node->Params[2].v = 0.0f;
+                                    node->Params[2].minv = -1;
+                                    node->Params[2].maxv = -1;
+                                    node->Params[2].string_param = L"1x1";
+
+                                    node->hit.left = pos.X;
+                                    node->hit.top = pos.Y;
                                     op.nodes.push_back(node);
                                 }
 
@@ -1806,8 +2029,31 @@ namespace winrt::DirectMLGraph::implementation
         RefreshMenu();
     }
 
+	std::vector<CComPtr<IDXGIAdapter1>> all_adapters;
+    CComPtr<IDXGIAdapter1> adapter;
+    void MLGraph::LoadAdapters()
+    {
+		if (all_adapters.empty())
+		{
+			CComPtr<IDXGIFactory1> dxgiFactory;
+			CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)(&dxgiFactory));
+			CComPtr<IDXGIAdapter1> adapterq;
+			for (UINT i = 0; dxgiFactory->EnumAdapters1(i, &adapterq) != DXGI_ERROR_NOT_FOUND; ++i)
+			{
+                DXGI_ADAPTER_DESC1 desc = {};
+                adapterq->GetDesc1(&desc);
+				all_adapters.push_back(adapterq);
+                adapterq = 0;
+			}
+            auto iAdapter = Settings->GetRootElement().vv("iAdapter").GetValueInt(0);
+            if (iAdapter > 0 && iAdapter <= all_adapters.size())
+                adapter = all_adapters[iAdapter - 1];
+        }
+    }
+
     void MLGraph::Resize()
     {
+        LoadAdapters();
         auto sp = Content().as<Panel>();
         auto men = sp.FindName(L"menu").as<MenuBar>();
         RECT rc = {};
@@ -1866,7 +2112,7 @@ namespace winrt::DirectMLGraph::implementation
         if (!d2d)
         {
             d2d = std::make_shared<D2D>();
-            d2d->CreateD2X(0, (int)(wi * ActualSize), (int)(he * ActualSize), 1, 0, 0, 1);
+            d2d->CreateD2X(adapter,0, (int)(wi * ActualSize), (int)(he * ActualSize), 1, 0, 0, 1);
         }
         else
             d2d->Resize((int)(wi * ActualSize), (int)(he * ActualSize));
@@ -1968,8 +2214,22 @@ namespace winrt::DirectMLGraph::implementation
     }
 
 
+    void MLGraph::UpdateVideoMemory()
+    {
+        CComPtr<IDXGIAdapter3> d3;
+        d3 = d2d->dxgiAdapter;
+        if (d3)
+        {
+            d3->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &vmi);
+            d3->GetDesc1(&this->vdesc);
+        }
+    }
+
     void MLGraph::Paint()
     {
+        wchar_t wt[1000] = {};
+        LoadAdapters();
+
         auto sp = Content().as<Panel>();
         auto scp = sp.FindName(L"scp").as<SwapChainPanel>();
         if (d2d)
@@ -1980,11 +2240,13 @@ namespace winrt::DirectMLGraph::implementation
                 auto wi = sp.ActualWidth();
                 auto he = sp.ActualHeight();
                 d2d = std::make_shared<D2D>();
-                d2d->CreateD2X(0, (int)wi, (int)he, 1, 0, 0, 1);
+                d2d->CreateD2X(adapter.p, 0, (int)wi, (int)he, 1, 0, 0, 1);
             }
 
         }
         if (!d2d)
+            return;
+        if (!d2d->m_d2dContext)
             return;
         d2d->m_d2dContext->BeginDraw();
         d2d->m_d2dContext->Clear({ 1,1,1,1 });
@@ -1997,7 +2259,7 @@ namespace winrt::DirectMLGraph::implementation
         if (!d2d->RedBrush)
             d2d->m_d2dContext->CreateSolidColorBrush({ 1,0,0,1 }, &d2d->RedBrush);
         if (!d2d->CyanBrush)
-            d2d->m_d2dContext->CreateSolidColorBrush({0,0,1,1 }, &d2d->CyanBrush);
+            d2d->m_d2dContext->CreateSolidColorBrush({ 0,0,1,1 }, &d2d->CyanBrush);
         if (!d2d->GreenBrush)
             d2d->m_d2dContext->CreateSolidColorBrush({ 0,1,0,1 }, &d2d->GreenBrush);
         if (!d2d->YellowBrush)
@@ -2023,6 +2285,28 @@ namespace winrt::DirectMLGraph::implementation
         rfull.bottom = (float)scp.Height();
         auto r = d2d->m_d2dContext5;
 
+
+        if (1)
+        {
+            if (vmi.Budget == 0)
+            {
+                UpdateVideoMemory();
+            }
+
+			swprintf_s(wt, L"Adapter: %s - Video Memory: %I64u MB, Usage: %I64u MB", vdesc.Description ? vdesc.Description : L"Default Adapter", vmi.Budget / (1024 * 1024),vmi.CurrentUsage / (1024*1024));
+			auto msr = d2d->MeasureString(d2d->WriteFa.get(), d2d->Text2, wt,-1);
+            if (rfull.right > std::get<0>(msr))
+            {
+                D2D1_RECT_F r1 = { 0,0,std::max(std::get<0>(msr) + 10,rfull.right),std::get<1>(msr) + 5 };
+
+                d2d->CyanBrush->SetOpacity(0.2f);
+                r->FillRoundedRectangle(D2D1::RoundedRect(r1, 5, 5), d2d->CyanBrush);
+                d2d->CyanBrush->SetOpacity(1.0f);
+                TEXTALIGNPUSH textalign(d2d->Text2, DWRITE_TEXT_ALIGNMENT_LEADING, DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+                r1.left += 5;
+                r->DrawText(wt, (UINT32)wcslen(wt), d2d->Text2, r1, d2d->BlackBrush);
+            }
+        }
 
         // Global Zoom
 
@@ -2234,6 +2518,45 @@ namespace winrt::DirectMLGraph::implementation
 				});
 			m2.Items().Append(mi);
         }
+
+        // And the adapters
+        auto m31 = sp.FindName(L"AdapterMenu").as<MenuBarItem>();
+        if (m31.Items().Size() == 0)
+        {
+            for (size_t i = 0; i <= all_adapters.size(); i++)
+            {
+                if (i == 0)
+                {
+                    auto mi = RadioMenuFlyoutItem();
+                    mi.Text(L"Default Adapter");
+                    mi.IsChecked(adapter == 0);
+                    mi.Click([this](IInspectable const&, RoutedEventArgs const&)
+                        {
+							Settings->GetRootElement().vv("iAdapter").SetValueInt(0);
+                            Settings->Save();
+                            MessageBox((HWND)wnd(),L"Restart the application to apply the changes.",ttitle,MB_OK);
+                        });
+                    m31.Items().Append(mi);
+
+                    auto mi2 = MenuFlyoutSeparator();
+                    m31.Items().Append(mi2);
+                    continue;
+                }
+                auto mi = RadioMenuFlyoutItem();
+                DXGI_ADAPTER_DESC1 desc;
+                all_adapters[i - 1]->GetDesc1(&desc);
+                mi.Text(ystring().Format(L"Adapter %zi: %s", i, desc.Description));
+                mi.IsChecked(adapter == all_adapters[i - 1]);
+                mi.Click([this, i](IInspectable const&, RoutedEventArgs const&)
+                    {
+                        Settings->GetRootElement().vv("iAdapter").SetValueInt((int)i);
+                        Settings->Save();
+                        MessageBox((HWND)wnd(), L"Restart the application to apply the changes.", ttitle, MB_OK);
+                    });
+                m31.Items().Append(mi);
+            }
+        }
+
     }
 
     void MLGraph::Input_Completed(IInspectable, IInspectable)
@@ -2242,7 +2565,11 @@ namespace winrt::DirectMLGraph::implementation
         {
             try
             {
-                WhatParam->v =  std::clamp(std::stof(_i1),WhatParam->minv,WhatParam->maxv);
+                Push();
+                if (WhatParam->minv <= -1 && WhatParam->maxv <= -1)
+                    WhatParam->string_param = _i1;
+				else
+                    WhatParam->v =  std::clamp(std::stof(_i1),WhatParam->minv,WhatParam->maxv);
             }
             catch (...)
             {
@@ -2255,12 +2582,7 @@ namespace winrt::DirectMLGraph::implementation
         {
             // Input/Cosntant Tensor Dimensions
             auto& op = xl.ops[ActiveOperator2];
-            std::vector<unsigned int> dims; // convert string to dims, split in x
-            std::vector<std::wstring> split(const std::wstring & s, wchar_t delim);
-
-			auto sp = split(_i1, L'x');
-			for (auto& s : sp)
-				dims.push_back(std::stoi(s));
+            std::vector<unsigned int> dims = TensorFromString(_i1.c_str()); // convert string to dims, split in x
             try
             {
                 Push();
@@ -2510,6 +2832,8 @@ namespace winrt::DirectMLGraph::implementation
 				}
 			}
 		}
+
+        UpdateVideoMemory();
         FullRefresh();
     }
 
@@ -2708,6 +3032,7 @@ namespace winrt::DirectMLGraph::implementation
                             expr = (dml::BitXor(mop.Item(whati[0]), mop.Item(whati[1])));
 
 
+
                         if (it->what == TYPE_CAST)
                             expr = (dml::Cast(mop.Item(whati[0]),(DML_TENSOR_DATA_TYPE)it->OpType));
                         if (it->what == TYPE_CEIL)
@@ -2761,11 +3086,30 @@ namespace winrt::DirectMLGraph::implementation
 								e3 = mop.Item(whati[2]);
                             expr = (dml::Gemm(mop.Item(whati[0]), mop.Item(whati[1]),  e3, t1, t2, alpha, beta));
                         }
+						if (it->what == TYPE_GREATERTHAN)
+							expr = (dml::GreaterThan(mop.Item(whati[0]), mop.Item(whati[1]),(DML_TENSOR_DATA_TYPE)it->OpType));
+                        if (it->what == TYPE_GREATERTHANOREQUAL)
+                            expr = (dml::GreaterThanOrEqual(mop.Item(whati[0]), mop.Item(whati[1]), (DML_TENSOR_DATA_TYPE)it->OpType));
 
                         if (it->what == TYPE_IDENTITY)
                             expr = (dml::Identity(mop.Item(whati[0])));
                         if (it->what == TYPE_IF)
                             expr = (dml::If(mop.Item(whati[0]), mop.Item(whati[1]), mop.Item(whati[2])));
+
+						if (it->what == TYPE_ISINFINITY)
+							expr = dml::IsInfinity(mop.Item(whati[0]),(DML_IS_INFINITY_MODE)it->Params[0].v, (DML_TENSOR_DATA_TYPE)it->OpType);
+						if (it->what == TYPE_ISNAN)
+							expr = (dml::IsNaN(mop.Item(whati[0]), (DML_TENSOR_DATA_TYPE)it->OpType));
+
+                        if (it->what == TYPE_JOIN)
+                        {
+							std::vector<dml::Expression> v;
+							for (size_t fi = 0; fi < whati.size(); fi++)
+							{
+								v.push_back(mop.Item(whati[fi]));
+							}
+                            expr = dml::Join(v, (UINT)it->Params[0].v);
+                        }
 
                         if (it->what == TYPE_LAND)
                             expr = (dml::LogicalAnd(mop.Item(whati[0]), mop.Item(whati[1])));
@@ -2775,10 +3119,12 @@ namespace winrt::DirectMLGraph::implementation
                             expr = (dml::LogicalXor(mop.Item(whati[0]), mop.Item(whati[1])));
                         if (it->what == TYPE_LNOT)
                             expr = (dml::LogicalNot(mop.Item(whati[0])));
-
-
                         if (it->what == TYPE_LOG)
                             expr = (dml::Log(mop.Item(whati[0])));
+                        if (it->what == TYPE_LESSTHAN)
+                            expr = (dml::LessThan(mop.Item(whati[0]), mop.Item(whati[1]), (DML_TENSOR_DATA_TYPE)it->OpType));
+                        if (it->what == TYPE_LESSTHANOREQUAL)
+                            expr = (dml::LessThanOrEqual(mop.Item(whati[0]), mop.Item(whati[1]), (DML_TENSOR_DATA_TYPE)it->OpType));
 
                         if (it->what == TYPE_MAX)
                             expr = (dml::Max(mop.Item(whati[0]), mop.Item(whati[1])));
@@ -2799,6 +3145,20 @@ namespace winrt::DirectMLGraph::implementation
 
                         if (it->what == TYPE_ROUND)
                             expr = (dml::Round(mop.Item(whati[0]),(DML_ROUNDING_MODE)it->Params[0].v));
+
+                        if (it->what == TYPE_REINTERPRET)
+                        {
+                            std::vector<unsigned int> newSizes = TensorFromString(it->Params[0].string_param.c_str());
+                            expr = (dml::Reinterpret(mop.Item(whati[0]), (DML_TENSOR_DATA_TYPE)it->OpType, newSizes, {}));
+                        }
+
+                        if (it->what == TYPE_SLICE)
+                        {
+                            std::vector<unsigned int> offsets = TensorFromString(it->Params[0].string_param.c_str());
+                            std::vector<unsigned int> sizes = TensorFromString(it->Params[1].string_param.c_str());
+                            std::vector<int> strides = TensorFromString<int>(it->Params[2].string_param.c_str());
+                            expr = (dml::Slice(mop.Item(whati[0]),offsets,sizes,strides));
+                        }
 
                         if (it->what == TYPE_SUBTRACT)
                             expr = (dml::Subtract(mop.Item(whati[0]), mop.Item(whati[1])));
@@ -2855,6 +3215,7 @@ namespace winrt::DirectMLGraph::implementation
             MessageBoxA((HWND)wnd(), w, "Compile error", MB_ICONERROR);
         }
         FullRefresh();
+        UpdateVideoMemory();
     }
 
 

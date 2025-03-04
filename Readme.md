@@ -30,11 +30,13 @@ E: Erf, Exp, Equals
 
 F: Floor
 
-G: Gemm
+G: Gemm, GreaterThan, GreaterThanOrEqual
 
-I: Identity, If
+I: Identity, If, IsInfinity, IsNaN
 
-L: Log
+J: Join
+
+L: Log, LessThan, LessThanOrEqual
 
 M: Max,Mean,Min,Multiply
 
@@ -44,9 +46,9 @@ O: Or
 
 P: Pow
 
-R: Round
+R: Round, Reintrerpret
 
-S: Subtract, Sqrt, Sign
+S: Slice, Subtract, Sqrt, Sign
 
 T: Threshold
 
@@ -56,7 +58,6 @@ X: Xor
 All other operators
 
 Activiation, Batch, 
-GreaterThan, GreaterThanOrEqual  IsInfinity, IsNan, LessThan, LessThanOrEqual,
-Join Modulus quantizer  Recip,Reduce,Resample,  Slice Span Split, Tile Topk, 
+Modulus quantizer  Recip,Reduce,Resample, Span Split, Tile Topk, 
 
 ![screenshot](graph1.jpg)

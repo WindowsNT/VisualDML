@@ -157,17 +157,17 @@ int __stdcall wWinMain(HINSTANCE, HINSTANCE, PWSTR t, int)
         }
     }
 
-/*    PWSTR p = 0;
+    PWSTR p = 0;
     SHGetKnownFolderPath(FOLDERID_ProgramData, 0, 0, &p);
     std::wstring de = p;
     CoTaskMemFree(p);
 
-    de += L"\\B7D701B9-F0C7-4771-B8ED-3F53453C1AB8";
+    de += L"\\2DB07F9B-547B-4376-8977-95DFC014B99C";
     SHCreateDirectory(0, de.c_str());
-    datafolder = de.c_str();
+//    datafolder = de.c_str();
     std::wstring sf = de + L"\\settings.xml";
-    settings = std::make_shared<XML3::XML>(sf.c_str());
-    */
+    Settings = std::make_shared<XML3::XML>(sf.c_str());
+    
 
     winrt::init_apartment(winrt::apartment_type::single_threaded);
     ::winrt::Microsoft::UI::Xaml::Application::Start(
@@ -176,7 +176,7 @@ int __stdcall wWinMain(HINSTANCE, HINSTANCE, PWSTR t, int)
             ::winrt::make<::winrt::DirectMLGraph::implementation::App>();
         });
 
-//    settings->Save();
+    Settings->Save();
     return 0;
 }
 
