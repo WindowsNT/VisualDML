@@ -207,7 +207,7 @@ namespace winrt::VisualDML::implementation
     void App::OnLaunched([[maybe_unused]] LaunchActivatedEventArgs const& e)
     {
         window = CreateWi();
-
+        window.ExtendsContentIntoTitleBar(true);
     }
 }
 
