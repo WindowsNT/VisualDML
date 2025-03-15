@@ -1,0 +1,105 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="MainWindow.xaml" />
+    <Page Include="MLGraph.xaml" />
+    <Page Include="Network.xaml" />
+    <Page Include="Settings.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="MainWindow.idl" />
+    <Midl Include="Item.idl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="$(GeneratedFilesDir)module.g.cpp" />
+    <ClCompile Include="dmllib.cpp" />
+    <ClCompile Include="func.cpp" />
+    <ClCompile Include="Item.cpp" />
+    <ClCompile Include="d2d.cpp" />
+    <ClCompile Include="nn.cpp" />
+    <ClCompile Include="python.cpp" />
+    <ClCompile Include="cppgen.cpp" />
+    <ClCompile Include="examples.cpp" />
+    <ClCompile Include="cparse\builtin-features.cpp">
+      <Filter>Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="cparse\containers.cpp">
+      <Filter>Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="cparse\functions.cpp">
+      <Filter>Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="cparse\packToken.cpp">
+      <Filter>Parser</Filter>
+    </ClCompile>
+    <ClCompile Include="cparse\shunting-yard.cpp">
+      <Filter>Parser</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="Item.h" />
+    <ClInclude Include="nn.h" />
+    <ClInclude Include="C:\Windows Kits\10\Include\10.0.26100.0\um\d2d1.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Assets\Wide310x150Logo.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\StoreLogo.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\Square150x150Logo.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\Square44x44Logo.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\SplashScreen.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+    <Image Include="Assets\LockScreenLogo.scale-200.png">
+      <Filter>Assets</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Assets">
+      <UniqueIdentifier>{09f5d49e-76b9-4351-aa9d-204e7f057554}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="data">
+      <UniqueIdentifier>{f9be855d-3808-46c6-bf4b-c83f12981c9c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Parser">
+      <UniqueIdentifier>{ad005622-3f71-4cb5-b7ad-9cdfe495fb3a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="app.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <AppxManifest Include="Package.appxmanifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="Readme.md" />
+    <None Include="test.dml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="main.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="data\mnist.exe">
+      <Filter>data</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="data\directmllib.exe">
+      <Filter>data</Filter>
+    </CopyFileToFolders>
+  </ItemGroup>
+</Project>

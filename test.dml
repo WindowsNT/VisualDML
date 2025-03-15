@@ -1,0 +1,351 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<e>
+	<Pages>
+		<Page n="">
+			<Operators>
+				<Operator DataType="1" Zoom="1.000000" Active="1">
+					<Nodes>
+						<Node Name="Input" xx="64.702393" yy="262.968750" CSV="" CSVI="floats.csv" bf="0" sm="45" optype="1" Type="1">
+							<Children>
+								<Child idx="0" io="1" u="2,7"/>
+							</Children>
+							<Dimensions>
+								<Dimension Size="2"/>
+								<Dimension Size="10"/>
+							</Dimensions>
+						</Node>
+						<Node xx="274.442383" yy="80.968750" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="0" no="1" Type="48" Name="Constant">
+							<Children>
+								<Child idx="0" io="1" u="34"/>
+							</Children>
+							<Params>
+								<Param Name="Value" Value="$JACK" Min="-1.000000" Max="-1.000000"/>
+							</Params>
+							<Dimensions>
+								<Dimension Size="2"/>
+								<Dimension Size="10"/>
+							</Dimensions>
+						</Node>
+						<Node xx="524.000000" yy="146.107422" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="2" no="1" Type="26" Name="Add">
+							<Children>
+								<Child idx="0" io="0" u="34"/>
+								<Child idx="0" io="0" u="7"/>
+								<Child idx="0" io="1" u="14,17"/>
+							</Children>
+						</Node>
+						<Node xx="762.148438" yy="102.353516" CSV="o1.csv" CSVI="" bf="0" sm="0" optype="1" Name="Output" Type="999999">
+							<Children>
+								<Child idx="0" io="0" u="17"/>
+							</Children>
+						</Node>
+					</Nodes>
+				</Operator>
+				<Operator DataType="1" Zoom="1.000000" Active="1">
+					<Nodes>
+						<Node Name="Input" xx="514.774658" yy="372.722656" CSV="" CSVI="" bf="0" sm="-45" optype="1" Type="1">
+							<Children>
+								<Child idx="0" io="1" u="30,93,98"/>
+							</Children>
+							<Dimensions>
+								<Dimension Size="2"/>
+								<Dimension Size="10"/>
+							</Dimensions>
+						</Node>
+						<Node xx="733.000000" yy="398.107422" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="1" no="1" Type="71" Name="Identity">
+							<Children>
+								<Child idx="0" io="0" u="30"/>
+								<Child idx="0" io="1" u="135"/>
+							</Children>
+						</Node>
+						<Node xx="881.648438" yy="370.599609" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="1" no="1" Type="96" Name="Pow">
+							<Children>
+								<Child idx="0" io="0" u="135"/>
+								<Child idx="0" io="1" u="136"/>
+							</Children>
+							<Params>
+								<Param Name="Exponent" Value="2.000000" Min="0.000000" Max="340282346638528859811704183484516925440.000000"/>
+							</Params>
+						</Node>
+						<Node xx="1154.148438" yy="380.353516" CSV="o2.csv" CSVI="" bf="0" sm="0" optype="1" Name="Output" Type="999999">
+							<Children>
+								<Child idx="0" io="0" u="136"/>
+							</Children>
+						</Node>
+					</Nodes>
+				</Operator>
+				<Operator DataType="1" Zoom="1.000000" Active="1">
+					<Nodes>
+						<Node Name="Input" xx="40.136719" yy="729.845703" CSV="" CSVI="" bf="0" sm="-45" optype="1" Type="1">
+							<Children>
+								<Child idx="0" io="1" u="128"/>
+							</Children>
+							<Dimensions>
+								<Dimension Size="1"/>
+								<Dimension Size="1"/>
+								<Dimension Size="2"/>
+								<Dimension Size="10"/>
+							</Dimensions>
+						</Node>
+						<Node Name="Input" xx="271.136719" yy="607.353516" CSV="" CSVI="" bf="0" sm="-45" optype="1" Type="1">
+							<Children>
+								<Child idx="0" io="1" u="127"/>
+							</Children>
+							<Dimensions>
+								<Dimension Size="1"/>
+								<Dimension Size="1"/>
+								<Dimension Size="10"/>
+								<Dimension Size="2"/>
+							</Dimensions>
+						</Node>
+						<Node xx="556.353760" yy="629.337891" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="3" no="1" Type="67" Name="Gemm">
+							<Children>
+								<Child idx="0" io="0" u="127"/>
+								<Child idx="0" io="0" u="128"/>
+								<Child idx="0" io="0" u=""/>
+								<Child idx="0" io="1" u="104"/>
+							</Children>
+							<Params>
+								<Param Name="Transpose 1" Value="0.000000" Min="0.000000" Max="1.000000"/>
+								<Param Name="Transpose 2" Value="0.000000" Min="0.000000" Max="1.000000"/>
+								<Param Name="Alpha" Value="0.000000" Min="0.000000" Max="340282346638528859811704183484516925440.000000"/>
+								<Param Name="Beta" Value="0.000000" Min="0.000000" Max="340282346638528859811704183484516925440.000000"/>
+							</Params>
+						</Node>
+						<Node xx="853.922852" yy="672.353516" CSV="o3.bin" CSVI="" bf="0" sm="0" optype="1" Name="Output" Type="999999">
+							<Children>
+								<Child idx="0" io="0" u="104"/>
+							</Children>
+						</Node>
+					</Nodes>
+				</Operator>
+			</Operators>
+			<Variables>
+				<Variable n="JACK" v="2.5"/>
+			</Variables>
+		</Page>
+		<Page n="">
+			<Operators>
+				<Operator DataType="1" Zoom="1.000000" Active="1">
+					<Nodes>
+						<Node Name="Input" xx="119.050049" yy="203.968750" CSV="" CSVI="&quot;Random&quot;" bf="0" sm="0" optype="1" Type="1">
+							<Children>
+								<Child idx="0" io="1" u="145,149"/>
+							</Children>
+							<Dimensions>
+								<Dimension Size="2"/>
+								<Dimension Size="1"/>
+								<Dimension Size="3"/>
+								<Dimension Size="4"/>
+							</Dimensions>
+						</Node>
+						<Node xx="380.938477" yy="583.460938" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="0" no="1" Type="48" Name="Constant">
+							<Children>
+								<Child idx="0" io="1" u="153"/>
+							</Children>
+							<Params>
+								<Param Name="Value" Value="2" Min="-1.000000" Max="-1.000000"/>
+							</Params>
+							<Dimensions>
+								<Dimension Size="2"/>
+								<Dimension Size="1"/>
+								<Dimension Size="3"/>
+								<Dimension Size="4"/>
+							</Dimensions>
+						</Node>
+						<Node xx="457.000000" yy="185.599609" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="1" no="1" Type="50" Name="Cos">
+							<Children>
+								<Child idx="0" io="0" u="149"/>
+								<Child idx="0" io="1" u="155,166,175"/>
+							</Children>
+						</Node>
+						<Node xx="814.000000" yy="256.599609" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="2" no="1" Type="55" Name="Divide">
+							<Children>
+								<Child idx="0" io="0" u="155"/>
+								<Child idx="0" io="0" u="153"/>
+								<Child idx="0" io="1" u="192"/>
+							</Children>
+						</Node>
+						<Node xx="1221.596680" yy="122.353516" CSV="&quot;Screen&quot;" CSVI="" bf="0" sm="0" optype="1" Name="Output" Type="999999">
+							<Children>
+								<Child idx="0" io="0" u="193"/>
+							</Children>
+						</Node>
+						<Node xx="996.605469" yy="321.107422" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="1" no="1" Type="13" Name="ActivationRelu">
+							<Children>
+								<Child idx="0" io="0" u="192"/>
+								<Child idx="0" io="1" u="193"/>
+							</Children>
+						</Node>
+					</Nodes>
+				</Operator>
+			</Operators>
+		</Page>
+		<Page n="">
+			<Operators>
+				<Operator DataType="1" Zoom="1.000000" Active="1">
+					<Nodes>
+						<Node Name="Input" xx="162.821533" yy="208.722656" CSV="" CSVI="" bf="0" sm="0" optype="1" Type="1">
+							<Children>
+								<Child idx="0" io="1" u="196,200,201,202,203,204"/>
+							</Children>
+							<Dimensions>
+								<Dimension Size="10"/>
+								<Dimension Size="10"/>
+							</Dimensions>
+						</Node>
+						<Node xx="494.909912" yy="365.599609" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="5" no="3" Type="41" Name="BatchNormalizationGrad">
+							<Children>
+								<Child idx="0" io="0" u="201"/>
+								<Child idx="0" io="0" u="200"/>
+								<Child idx="0" io="0" u="202"/>
+								<Child idx="0" io="0" u="203"/>
+								<Child idx="0" io="0" u="204"/>
+								<Child idx="0" io="1" u="212"/>
+								<Child idx="0" io="1" u="197"/>
+								<Child idx="0" io="1" u="213"/>
+							</Children>
+							<Params>
+								<Param Name="Epsilon" Value="0.0" Min="0.000000" Max="340282346638528859811704183484516925440.000000"/>
+							</Params>
+						</Node>
+						<Node xx="1152.000000" yy="280.107422" CSV="" CSVI="" bf="0" sm="0" optype="1" Name="Output" Type="999999">
+							<Children>
+								<Child idx="0" io="0" u="197"/>
+							</Children>
+						</Node>
+						<Node xx="968.000000" yy="213.107422" CSV="" CSVI="" bf="0" sm="0" optype="1" Name="Output" Type="999999">
+							<Children>
+								<Child idx="0" io="0" u="212"/>
+							</Children>
+						</Node>
+						<Node xx="1375.000000" yy="466.107422" CSV="" CSVI="" bf="0" sm="0" optype="1" Name="Output" Type="999999">
+							<Children>
+								<Child idx="0" io="0" u="213"/>
+							</Children>
+						</Node>
+					</Nodes>
+				</Operator>
+			</Operators>
+		</Page>
+		<Page n="">
+			<Operators>
+				<Operator DataType="1" Zoom="1.000000" Active="1">
+					<Nodes>
+						<Node Name="Input" xx="67.842773" yy="145.460938" CSV="" CSVI="&quot;Sequence&quot;" bf="0" sm="0" optype="1" Type="1">
+							<Children>
+								<Child idx="0" io="1" u="231,234"/>
+							</Children>
+							<Dimensions>
+								<Dimension Size="1"/>
+								<Dimension Size="10"/>
+							</Dimensions>
+						</Node>
+						<Node Name="Input" xx="50.842773" yy="496.460938" CSV="" CSVI="&quot;Sequence&quot;" bf="0" sm="0" optype="1" Type="1">
+							<Children>
+								<Child idx="0" io="1" u="232"/>
+							</Children>
+							<Dimensions>
+								<Dimension Size="1"/>
+								<Dimension Size="1"/>
+							</Dimensions>
+						</Node>
+						<Node xx="641.000000" yy="193.599609" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="1" no="1" Type="71" Name="Identity">
+							<Children>
+								<Child idx="0" io="0" u="231"/>
+								<Child idx="0" io="1" u="221"/>
+							</Children>
+						</Node>
+						<Node xx="284.065674" yy="621.460938" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="1" no="1" Type="100" Name="Reinterpret">
+							<Children>
+								<Child idx="0" io="0" u="232"/>
+								<Child idx="0" io="1" u="233,237"/>
+							</Children>
+							<Params>
+								<Param Name="New Size" Value="1x1x1x1" Min="-1.000000" Max="-1.000000"/>
+							</Params>
+						</Node>
+						<Node xx="320.112549" yy="323.460938" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="1" no="1" Type="100" Name="Reinterpret">
+							<Children>
+								<Child idx="0" io="0" u="234"/>
+								<Child idx="0" io="1" u="235,236"/>
+							</Children>
+							<Params>
+								<Param Name="New Size" Value="1x1x1x10" Min="-1.000000" Max="-1.000000"/>
+							</Params>
+						</Node>
+						<Node xx="627.353760" yy="555.830078" CSV="" CSVI="" bf="0" sm="0" optype="1" ni="3" no="1" Type="67" Name="Gemm">
+							<Children>
+								<Child idx="0" io="0" u="236"/>
+								<Child idx="0" io="0" u="237"/>
+								<Child idx="0" io="0" u=""/>
+								<Child idx="0" io="1" u="238"/>
+							</Children>
+							<Params>
+								<Param Name="Transpose 1" Value="1" Min="0.000000" Max="1.000000"/>
+								<Param Name="Transpose 2" Value="" Min="0.000000" Max="1.000000"/>
+								<Param Name="Alpha" Value="1" Min="0.000000" Max="340282346638528859811704183484516925440.000000"/>
+								<Param Name="Beta" Value="1" Min="0.000000" Max="340282346638528859811704183484516925440.000000"/>
+							</Params>
+						</Node>
+						<Node xx="857.596680" yy="303.845703" CSV="&quot;Screen&quot;" CSVI="" bf="0" sm="0" optype="1" Name="Output" Type="999999">
+							<Children>
+								<Child idx="0" io="0" u="221"/>
+							</Children>
+						</Node>
+						<Node xx="987.596680" yy="631.353516" CSV="&quot;Screen&quot;" CSVI="" bf="0" sm="0" optype="1" Name="Output" Type="999999">
+							<Children>
+								<Child idx="0" io="0" u="238"/>
+							</Children>
+						</Node>
+					</Nodes>
+				</Operator>
+			</Operators>
+		</Page>
+		<Page n="">
+			<Operators>
+				<Operator DataType="1" Zoom="1.000000" Active="1">
+					<Nodes>
+						<Node Name="Input" xx="100.000000" yy="100.000000" CSV="" CSVI="" bf="0" sm="0" optype="1" Type="1">
+							<Children>
+								<Child idx="0" io="1" u=""/>
+							</Children>
+							<Dimensions>
+								<Dimension Size="16"/>
+								<Dimension Size="1"/>
+								<Dimension Size="1"/>
+								<Dimension Size="784"/>
+							</Dimensions>
+						</Node>
+						<Node xx="537.000000" yy="366.107422" CSV="" CSVI="" bf="0" sm="0" optype="1" Name="Output" Type="999999">
+							<Children>
+								<Child idx="0" io="0" u=""/>
+							</Children>
+						</Node>
+						<Node Name="Input" xx="96.230469" yy="324.722656" CSV="" CSVI="" bf="0" sm="0" optype="1" Type="1">
+							<Children>
+								<Child idx="0" io="1" u=""/>
+							</Children>
+							<Dimensions>
+								<Dimension Size="1"/>
+								<Dimension Size="1"/>
+								<Dimension Size="784"/>
+								<Dimension Size="10"/>
+							</Dimensions>
+						</Node>
+						<Node Name="Input" xx="95.183594" yy="557.722656" CSV="" CSVI="" bf="0" sm="0" optype="1" Type="1">
+							<Children>
+								<Child idx="0" io="1" u=""/>
+							</Children>
+							<Dimensions>
+								<Dimension Size="1"/>
+								<Dimension Size="1"/>
+								<Dimension Size="1"/>
+								<Dimension Size="784"/>
+							</Dimensions>
+						</Node>
+					</Nodes>
+				</Operator>
+			</Operators>
+		</Page>
+	</Pages>
+</e>

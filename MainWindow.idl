@@ -1,0 +1,12 @@
+namespace VisualDML
+{
+    [default_interface]
+    runtimeclass MainWindow : Microsoft.UI.Xaml.Window
+    {
+        MainWindow();
+        void Resize();
+        void Finished();
+        Int64 wnd;
+
+    }
+}
