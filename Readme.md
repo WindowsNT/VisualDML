@@ -3,6 +3,8 @@
 A tool to visually-design DirectML operators that run in the GPU and to create and train a neural network with it.
 Uses my [DirectML Lib](https://github.com/WindowsNT/directmllib).
 
+Download also binary from <a href="https://apps.microsoft.com/detail/9PP77DNJ0B8B?hl=en-us&gl=GR&ocid=pdpshare">Windows App Store</a>
+
 ## Features for DirectML Design
 
 * Undo, Redo, Save, Load, Multiple Sets
