@@ -10,8 +10,11 @@
     Loaded="OnLoaded"
     mc:Ignorable="d">
 
-    <StackPanel Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Top">
-
+    <Grid >
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
         <ContentDialog x:Name="Input1" PrimaryButtonStyle="{StaticResource AccentButtonStyle}" IsPrimaryButtonEnabled="True" PrimaryButtonText="OK" SecondaryButtonText="Cancel" IsSecondaryButtonEnabled="True" PrimaryButtonClick="Input_Completed" >            <StackPanel Orientation="Vertical">                <TextBlock  Name="Input2"  Margin="10,0,0,10" Text="{x:Bind i0,Mode=TwoWay}" />
                 <TextBox Name="Input3" Text="{x:Bind i1,Mode=TwoWay}"/>            </StackPanel>        </ContentDialog>
@@ -23,7 +26,7 @@
                 </RadioButtons>
             </StackPanel>        </ContentDialog>
 
-        <MenuBar HorizontalAlignment="Left" x:Name="menu">
+        <MenuBar HorizontalAlignment="Left" x:Name="menu" Grid.Row="0">
             <MenuBarItem Title="File" >
                 <MenuFlyoutItem Text="New" Click="OnNew" >
                     <MenuFlyoutItem.Icon>
@@ -262,7 +265,7 @@
         </MenuBar>
 
 
-        <ScrollView ContentOrientation="None" x:Name="scv"
+        <ScrollView ContentOrientation="None" x:Name="scv" Grid.Row="1"
     ZoomMode="Enabled" 
     VerticalAlignment="Top" HorizontalAlignment="Left"
      HorizontalScrollBarVisibility="Visible"
@@ -278,5 +281,5 @@
 
 
         
-    </StackPanel>
+    </Grid>
 </Page>
