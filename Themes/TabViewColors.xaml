@@ -1,0 +1,26 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ResourceDictionary.MergedDictionaries>
+        <!-- This is crucial - each resource dictionary needs this -->
+        <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+    </ResourceDictionary.MergedDictionaries>
+    
+    <ResourceDictionary.ThemeDictionaries>
+
+        <!-- Light theme colors -->
+        <ResourceDictionary x:Key="Light">
+            <Color x:Key="TabSelectedBackgroundColor">DodgerBlue</Color>
+            <Color x:Key="TabSelectedForegroundColor">White</Color>
+        </ResourceDictionary>
+
+        <!-- Dark theme colors -->
+        <ResourceDictionary x:Key="Dark">
+            <Color x:Key="TabSelectedBackgroundColor">DeepSkyBlue</Color>
+            <Color x:Key="TabSelectedForegroundColor">Black</Color>
+        </ResourceDictionary>
+
+    </ResourceDictionary.ThemeDictionaries>
+
+</ResourceDictionary>

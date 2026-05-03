@@ -1,7 +1,7 @@
 #include "pch.h"
 
 
-
+#pragma comment(lib,"directml.lib")
 // Functions
 
 struct RECTANDTIP

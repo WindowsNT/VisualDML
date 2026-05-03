@@ -41,7 +41,8 @@
 #include <dxgi1_6.h>
 #include <atlbase.h>
 #include "d3dx12.h"
-#include ".\\packages\\Microsoft.AI.DirectML.1.15.4\\include\\DirectML.h"
+//#include ".\\packages\\Microsoft.AI.DirectML.1.15.4\\include\\DirectML.h"
+#include <directml.h>
 #include "DirectMLX.h"
 
 #include "ystring.h"

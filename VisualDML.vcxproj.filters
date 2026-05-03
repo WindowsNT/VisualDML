@@ -8,6 +8,12 @@
     <Page Include="MLGraph.xaml" />
     <Page Include="Network.xaml" />
     <Page Include="Settings.xaml" />
+    <Page Include="Themes\ButtonStyles.xaml">
+      <Filter>Themes</Filter>
+    </Page>
+    <Page Include="Themes\TabViewColors.xaml">
+      <Filter>Themes</Filter>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="MainWindow.idl" />
@@ -78,6 +84,9 @@
     </Filter>
     <Filter Include="Parser">
       <UniqueIdentifier>{ad005622-3f71-4cb5-b7ad-9cdfe495fb3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Themes">
+      <UniqueIdentifier>{ad3925d6-0506-4a6a-8d33-973427ddbcaa}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
